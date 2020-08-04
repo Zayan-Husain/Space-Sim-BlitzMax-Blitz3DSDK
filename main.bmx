@@ -11,6 +11,7 @@ Include "player.bmx"
 
 Include "game_over.bmx"
 Include "start_screen.bmx"
+Include "bullet.bmx"
 
 
 
