@@ -4,13 +4,12 @@ Import blitz3d.blitz3dsdk
 Include "yengine.bmx"
 
 Include "game_world.bmx"
-
 Include "win_world.bmx"
-
-Include "player.bmx"
-
 Include "game_over.bmx"
 Include "start_screen.bmx"
+
+Include "player.bmx"
+Include "enemy.bmx"
 Include "bullet.bmx"
 
 
@@ -40,7 +39,7 @@ winw =  win_world.Create()
 
 _game_over = game_over.Create()
 
-ye.add_world( start , "start_screen" )
+ye.add_world( start, "start_screen" )
 ye.add_world( tst, "game_world" )
 ye.add_world( winw, "win_world" )
 ye.add_world( _game_over, "game_over" )

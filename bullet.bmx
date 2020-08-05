@@ -1,10 +1,12 @@
 Type bullet extends yentity
 	
-	Field dmg, lifeTimer
+	Field dmg = 1, disappearTimer:ytimer, disappearTimerLength# = 5, team = 1
 	
 	Method init()
 		
 		Super.init()
+		
+		disappearTimer = ytimer.Create(disappearTimerLength)
 		
 	EndMethod
 	
@@ -15,6 +17,17 @@ Type bullet extends yentity
 		'methods
 		
 		move()
+		disappear()
+		
+	EndMethod
+	
+	Method disappear()
+		
+		If disappearTimer.finished() Then
+			
+			world.remove( Self )
+			
+		EndIf
 		
 	EndMethod
 	

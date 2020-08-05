@@ -7,14 +7,13 @@ Type player Extends yentity
 	
 	Field  pitchs:Float, yaws:Float, rolls:Float, tspeed:Float = 4
 	
-	Field shootTimer:ytimer, shootInterval = 1
+	Field shootTimer:ytimer, shootInterval = 0.5, team = 1, gun_type:String = "SMG", bullet_dmg = 1
 
 	Method init()
 	
 		Super.init()
 		
 		shootTimer = ytimer.Create( shootInterval )
-		
 		
 
 	End Method'end init
@@ -26,6 +25,29 @@ Type player Extends yentity
 		posCam()
 		shoot()
 	End Method'end update
+	
+	Method change_gun()
+		
+		If gun_type = "SMG" Then
+			
+			shootInterval = 0.5
+			bullet_dmg = 1
+			
+		EndIf
+		If gun_type = "pistol" Then
+			
+			shootInterval = 2
+			bullet_dmg = 3
+			
+		EndIf
+		If gun_type = "shotgun" Then
+			
+			shootInterval = 3
+			bullet_dmg = 2
+			
+		EndIf
+		
+	EndMethod
 	
 	Method move()
 		
@@ -64,6 +86,18 @@ Type player Extends yentity
 		If pitch < -180 Then pitch = pitch+360
 		If pitch >= 180 Then pitch = pitch-360		
 		
+		'switch guns
+		If kd( 2 ) Then 
+			gun_type = "SMG"
+		EndIf
+		If kd( 3 ) Then 
+			gun_type = "pistol"
+		EndIf
+		If kd( 4 ) Then 
+			gun_type = "shotgun"
+		EndIf
+		Print gun_type
+		change_gun()
 		
 		'rotate and move ship
 		bbTurnEntity grafic, pitch, yaw, 0
@@ -72,7 +106,7 @@ Type player Extends yentity
 		
 		'apply friction
 		pitchs = 0
-		pitch = 0	
+		pitch = 0
 		yaws = 0
 		yaw = 0
 	EndMethod
@@ -83,8 +117,9 @@ Type player Extends yentity
 			
 			b:bullet = bullet.Create( 0, 0, 0, bbCreateCone(), 1 )
 			world.add( b )
-			bbPositionEntity b.grafic, x, y, z	'place the bullet at the guns position
-			bbTurnEntity b.grafic, pitch, yaw, roll'orientate the bullet with the gun
+			bbPositionEntity b.grafic, x, y+3, z 'place the bullet at the guns position
+			bbTurnEntity b.grafic, bbEntityPitch( grafic ), bbEntityYaw( grafic ), bbEntityRoll( grafic )'the bullet with the gun
+			b.dmg = bullet_dmg
 			
 		EndIf
 		
