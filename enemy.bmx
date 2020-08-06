@@ -1,12 +1,13 @@
 Type enemy Extends yentity
 	
-	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2
+	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, movementType$ = "homing", randDir = 4
 	
 	Method init()
 		
 		Super.init()
 		
 		shootTimer = ytimer.Create(shootTimerInterval)
+		moveTimer = ytimer.Create(5)
 		
 	EndMethod
 	
@@ -17,7 +18,35 @@ Type enemy Extends yentity
 		'methods
 		
 		hit()
+		move()
 		shoot()
+		
+	EndMethod
+	
+	Method move()
+		
+		If moveTimer.finished() Then
+			
+			randDir = rand(1, 6)
+			
+		EndIf
+		If movementType = "random" Then
+			
+			If randDir = 1 Then move_by(0, speed, 0) 'up
+			If randDir = 2 Then move_by(0, -speed, 0) 'down
+			If randDir = 3 Then move_by(-speed, 0, 0) 'left
+			If randDir = 4 Then move_by(speed, 0, 0) 'right
+			If randDir = 5 Then move_by(0, 0, speed) 'forward
+			If randDir = 6 Then move_by(0, 0, speed) 'backward
+			
+		EndIf
+		If movementType = "homing" Then
+			
+			p:player = player( get_by_type("player").First() )
+			bbPointEntity(grafic, p.grafic)
+			move_by(0, 0, speed)
+			
+		EndIf
 		
 	EndMethod
 	

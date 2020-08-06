@@ -7,7 +7,7 @@ Type player Extends yentity
 	
 	Field  pitchs:Float, yaws:Float, rolls:Float, tspeed:Float = 4
 	
-	Field shootTimer:ytimer, shootInterval = 0.5, team = 1, gun_type:String = "SMG", bullet_dmg = 1
+	Field shootTimer:ytimer, shootInterval = 0.8, team = 1, gun_type:String = "SMG", bullet_dmg = 1
 
 	Method init()
 	
@@ -26,24 +26,29 @@ Type player Extends yentity
 		shoot()
 	End Method'end update
 	
-	Method change_gun()
+	Method change_gun(gt$)
+		
+		gun_type = gt
 		
 		If gun_type = "SMG" Then
 			
 			shootInterval = 0.5
 			bullet_dmg = 1
+			shootTimer = ytimer.Create( shootInterval )
 			
 		EndIf
 		If gun_type = "pistol" Then
 			
-			shootInterval = 2
+			shootInterval = 1.3
 			bullet_dmg = 3
+			shootTimer = ytimer.Create( shootInterval )
 			
 		EndIf
 		If gun_type = "shotgun" Then
 			
-			shootInterval = 3
+			shootInterval = 2
 			bullet_dmg = 2
+			shootTimer = ytimer.Create( shootInterval )
 			
 		EndIf
 		
@@ -88,16 +93,17 @@ Type player Extends yentity
 		
 		'switch guns
 		If kd( 2 ) Then 
-			gun_type = "SMG"
+			change_gun("SMG")
 		EndIf
 		If kd( 3 ) Then 
-			gun_type = "pistol"
+			change_gun("pistol")
+
 		EndIf
 		If kd( 4 ) Then 
-			gun_type = "shotgun"
+			change_gun("shotgun")
 		EndIf
-		Print gun_type
-		change_gun()
+
+	
 		
 		'rotate and move ship
 		bbTurnEntity grafic, pitch, yaw, 0
@@ -115,14 +121,26 @@ Type player Extends yentity
 		
 		If kd( 57 ) And shootTimer.finished() Then
 			
-			b:bullet = bullet.Create( 0, 0, 0, bbCreateCone(), 1 )
-			world.add( b )
-			bbPositionEntity b.grafic, x, y+3, z 'place the bullet at the guns position
-			bbTurnEntity b.grafic, bbEntityPitch( grafic ), bbEntityYaw( grafic ), bbEntityRoll( grafic )'the bullet with the gun
-			b.dmg = bullet_dmg
+			If gun_type = "shotgun" Then
 			
+				make_bullet(x,y+3,z,1)
+				make_bullet(x-3,y+3,z,1)
+				make_bullet(x+3,y+3,z,1)
+				Return
+			EndIf
+			
+			make_bullet(x,y+3,z,1)
 		EndIf
 		
+	EndMethod
+	
+	Method make_bullet(yx,yy,yz,yspeed)
+	
+			b:bullet = bullet.Create( 0, 0, 0, bbCreateCone(), yspeed )
+			world.add( b )
+			bbPositionEntity b.grafic, yx, yy, yz 'place the bullet at the guns position
+			bbTurnEntity b.grafic, bbEntityPitch( grafic ), bbEntityYaw( grafic ), bbEntityRoll( grafic )'the bullet with the gun
+			b.dmg = bullet_dmg
 	EndMethod
 	
 	Method posCam()
