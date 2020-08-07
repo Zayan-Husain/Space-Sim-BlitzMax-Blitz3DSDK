@@ -1,6 +1,8 @@
 Type bullet extends yentity
 	
-	Field dmg = 1, disappearTimer:ytimer, disappearTimerLength# = 5, team = 1
+	Field dmg = 1, disappearTimer:ytimer, disappearTimerLength# = 5, team = 1, movementType$ = "bullet"
+	
+	Field target:yentity
 	
 	Method init()
 		
@@ -32,6 +34,9 @@ Type bullet extends yentity
 	EndMethod
 	
 	Method move()
+		If movementType = "homing" and target.grafic <> 0 Then
+			bbPointEntity grafic, target.grafic
+		EndIf
 		
 		move_by(0, 0, speed)
 		

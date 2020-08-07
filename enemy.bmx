@@ -1,6 +1,6 @@
 Type enemy Extends yentity
 	
-	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, movementType$ = "homing", randDir = 4
+	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, movementType$ = "homing", randDir = 4,removed 
 	
 	Method init()
 		
@@ -18,6 +18,7 @@ Type enemy Extends yentity
 		'methods
 		
 		hit()
+		If removed Then return
 		move()
 		shoot()
 		
@@ -27,7 +28,7 @@ Type enemy Extends yentity
 		
 		If moveTimer.finished() Then
 			
-			randDir = rand(1, 6)
+			randDir = Rand(1, 6)
 			
 		EndIf
 		If movementType = "random" Then
@@ -69,7 +70,7 @@ Type enemy Extends yentity
 		
 		b:bullet = bullet(collide("bullet"))
 		
-		If b and b.team <> team Then
+		If b And b.team <> team Then
 			
 			hp = hp - b.dmg
 			world.remove(b)
@@ -78,7 +79,7 @@ Type enemy Extends yentity
 		If hp <= 0 Then
 			
 			world.remove(Self)
-			
+			removed = True
 		EndIf
 		
 	EndMethod

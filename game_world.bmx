@@ -40,14 +40,13 @@ Field deletingMode
 
 
 
+		e:enemy = enemy.Create( 0, 0, 0, bbCreateSphere(), 0.15 )
+		add( e )
 		
 		'init player
 		c =  bbCreateCube()
 		p = player.Create( -3, 0, 7, c, 0.2 )
 		add( p )
-		
-		e:enemy = enemy.Create( 0, 0, 0, bbCreateSphere(), 0.15 )
-		add( e )
 
 	
 	EndMethod' init
