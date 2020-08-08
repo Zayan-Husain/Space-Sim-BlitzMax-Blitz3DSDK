@@ -1,6 +1,7 @@
 Type enemy Extends yentity
 	
 	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, movementType$ = "homing", randDir = 4,removed 
+	Field body_dmg = 3, enemy_type = 1
 	
 	Method init()
 		

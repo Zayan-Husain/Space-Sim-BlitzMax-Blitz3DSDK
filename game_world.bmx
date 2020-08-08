@@ -47,6 +47,10 @@ Field deletingMode
 		c =  bbCreateCube()
 		p = player.Create( -3, 0, 7, c, 0.2 )
 		add( p )
+		
+		'spawner
+		sp:spawner = spawner.Create( 5, -4, 7, bbCreateCylinder(), 0 )
+		add( sp )
 
 	
 	EndMethod' init

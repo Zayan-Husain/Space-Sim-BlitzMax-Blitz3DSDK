@@ -3,11 +3,13 @@
 
 Type player Extends yentity
 	
-	Field trust:Float, pitch:Float, yaw:Float, roll:Float
+	Field trust:Float, pitch:Float, yaw:Float, roll:Float, maxTrust = 5, minTrust = -3
 	
 	Field  pitchs:Float, yaws:Float, rolls:Float, tspeed:Float = 4
 	
 	Field shootTimer:ytimer, shootInterval = 0.8, team = 1, gun_type:String = "SMG", bullet_dmg = 1
+	
+	Field max_hp = 25, hp = max_hp
 	
 	Field campiv, tr:yentity
 
@@ -31,6 +33,7 @@ Type player Extends yentity
 		move()
 		posCam()
 		shoot()
+		hit()
 		'fps_cam()
 	End Method'end update
 	
@@ -91,6 +94,9 @@ Type player Extends yentity
 		If kd( 44 ) Then
 			trust = trust - 0.01
 		EndIf
+		If trust > maxTrust Then trust = maxTrust
+		If trust < minTrust Then trust = minTrust
+		
 		
 		
 		'tspeed devided by 10
@@ -170,6 +176,28 @@ Type player Extends yentity
 			bbTurnEntity b.grafic, bbEntityPitch( grafic ), bbEntityYaw( grafic ), bbEntityRoll( grafic )'the bullet with the gun
 			b.dmg = bullet_dmg
 			Return b
+	EndMethod
+	
+	Method hit()
+		
+		b:bullet = bullet( collide( "bullet" ) )
+		zo:enemy = enemy( collide( "enemy" ) )
+		If b And b.team <> team Then
+			hp = hp - b.dmg
+			world.remove( b )
+		EndIf
+		If zo Then
+			
+			hp = hp - zo.body_dmg
+			zo.move_by( 0, 0, -7 )
+			
+		EndIf
+		If hp <= 0 Then
+			
+			ye.change_world( "game_over" )
+			
+		EndIf
+		
 	EndMethod
 	
 	Method posCam()

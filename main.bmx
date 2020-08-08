@@ -11,6 +11,7 @@ Include "start_screen.bmx"
 Include "player.bmx"
 Include "enemy.bmx"
 Include "bullet.bmx"
+Include "spawner.bmx"
 
 
 

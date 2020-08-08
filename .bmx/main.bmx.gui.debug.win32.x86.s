@@ -36,6 +36,7 @@
 	extrn	_bbCreateCamera
 	extrn	_bbCreateCone
 	extrn	_bbCreateCube
+	extrn	_bbCreateCylinder
 	extrn	_bbCreateLight
 	extrn	_bbCreatePivot
 	extrn	_bbCreateSphere
@@ -148,12 +149,19 @@
 	public	__bb_player_New
 	public	__bb_player_change_gun
 	public	__bb_player_fps_cam
+	public	__bb_player_hit
 	public	__bb_player_init
 	public	__bb_player_make_bullet
 	public	__bb_player_move
 	public	__bb_player_posCam
 	public	__bb_player_shoot
 	public	__bb_player_update
+	public	__bb_spawner_Create
+	public	__bb_spawner_Delete
+	public	__bb_spawner_New
+	public	__bb_spawner_init
+	public	__bb_spawner_spawn
+	public	__bb_spawner_update
 	public	__bb_start_screen_Create
 	public	__bb_start_screen_Delete
 	public	__bb_start_screen_New
@@ -223,6 +231,7 @@
 	public	_bb_info1
 	public	_bb_kd
 	public	_bb_player
+	public	_bb_spawner
 	public	_bb_start_screen
 	public	_bb_tstw
 	public	_bb_win_world
@@ -241,23 +250,23 @@ __bb_main:
 	sub	esp,16
 	push	ebx
 	push	esi
-	cmp	dword [_631],0
-	je	_632
+	cmp	dword [_668],0
+	je	_669
 	mov	eax,0
 	pop	esi
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
 	ret
-_632:
-	mov	dword [_631],1
+_669:
+	mov	dword [_668],1
 	mov	dword [ebp-4],0
 	mov	dword [ebp-8],_bbNullObject
 	mov	dword [ebp-12],0
 	mov	dword [ebp-16],0
 	mov	eax,ebp
 	push	eax
-	push	_623
+	push	_660
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	call	___bb_blitz_blitz
@@ -328,11 +337,14 @@ _632:
 	push	_bb_bullet
 	call	_bbObjectRegisterType
 	add	esp,4
-	push	_583
+	push	_bb_spawner
+	call	_bbObjectRegisterType
+	add	esp,4
+	push	_620
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	call	_bbBeginBlitz3D
-	push	_585
+	push	_622
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	2
@@ -341,10 +353,10 @@ _632:
 	push	800
 	call	_bbGraphics3D
 	add	esp,16
-	push	_586
+	push	_623
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
-	push	_587
+	push	_624
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_1
@@ -352,17 +364,17 @@ _632:
 	call	_bbStringCompare
 	add	esp,8
 	cmp	eax,0
-	je	_588
-	push	_589
+	je	_625
+	push	_626
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [_bb_info1]
 	call	_bbStringToCString
 	add	esp,4
 	mov	ebx,eax
-	push	_83
+	push	_85
 	push	dword [_bb_info1]
-	push	_82
+	push	_84
 	call	_bbStringConcat
 	add	esp,8
 	push	eax
@@ -382,20 +394,20 @@ _632:
 	push	esi
 	call	_bbMemFree
 	add	esp,4
-_588:
-	push	_593
+_625:
+	push	_630
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
-	mov	eax,dword [_595]
+	mov	eax,dword [_632]
 	and	eax,1
 	cmp	eax,0
-	jne	_596
+	jne	_633
 	call	dword [_bb_yengine+72]
 	inc	dword [eax+4]
 	mov	dword [_bb_ye],eax
-	or	dword [_595],1
-_596:
-	push	_597
+	or	dword [_632],1
+_633:
+	push	_634
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	call	dword [_bb_start_screen+84]
@@ -403,12 +415,12 @@ _596:
 	call	_bbHandleFromObject
 	add	esp,4
 	mov	dword [ebp-4],eax
-	push	_599
+	push	_636
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	call	dword [_bb_game_world+84]
 	mov	dword [ebp-8],eax
-	push	_601
+	push	_638
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	call	dword [_bb_win_world+84]
@@ -416,7 +428,7 @@ _596:
 	call	_bbHandleFromObject
 	add	esp,4
 	mov	dword [ebp-12],eax
-	push	_603
+	push	_640
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	call	dword [_bb_game_over+84]
@@ -424,15 +436,15 @@ _596:
 	call	_bbHandleFromObject
 	add	esp,4
 	mov	dword [ebp-16],eax
-	push	_605
+	push	_642
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_607
+	jne	_644
 	call	_brl_blitz_NullObjectError
-_607:
-	push	_84
+_644:
+	push	_86
 	push	_bb_yworld
 	push	dword [ebp-4]
 	call	_bbHandleToObject
@@ -445,29 +457,29 @@ _607:
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,12
-	push	_608
+	push	_645
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_610
+	jne	_647
 	call	_brl_blitz_NullObjectError
-_610:
+_647:
 	push	_67
 	push	dword [ebp-8]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,12
-	push	_611
+	push	_648
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_613
+	jne	_650
 	call	_brl_blitz_NullObjectError
-_613:
-	push	_85
+_650:
+	push	_87
 	push	_bb_yworld
 	push	dword [ebp-12]
 	call	_bbHandleToObject
@@ -480,15 +492,15 @@ _613:
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,12
-	push	_614
+	push	_651
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_616
+	jne	_653
 	call	_brl_blitz_NullObjectError
-_616:
-	push	_86
+_653:
+	push	_79
 	push	_bb_yworld
 	push	dword [ebp-16]
 	call	_bbHandleToObject
@@ -501,35 +513,35 @@ _616:
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,12
-	push	_617
+	push	_654
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_619
+	jne	_656
 	call	_brl_blitz_NullObjectError
-_619:
+_656:
 	push	0
-	push	_84
+	push	_86
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,12
-	push	_620
+	push	_657
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_622
+	jne	_659
 	call	_brl_blitz_NullObjectError
-_622:
+_659:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
 	add	esp,4
 	mov	ebx,0
-	jmp	_227
-_227:
+	jmp	_239
+_239:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -545,7 +557,7 @@ __bb_yengine_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_635
+	push	_672
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -568,8 +580,8 @@ __bb_yengine_New:
 	mov	edx,dword [ebp-4]
 	mov	dword [edx+20],eax
 	mov	ebx,0
-	jmp	_230
-_230:
+	jmp	_242
+_242:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -581,24 +593,24 @@ __bb_yengine_Delete:
 	mov	ebp,esp
 	push	ebx
 	mov	ebx,dword [ebp+8]
-_233:
+_245:
 	mov	eax,dword [ebx+20]
 	dec	dword [eax+4]
-	jnz	_639
+	jnz	_676
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_639:
+_676:
 	mov	eax,dword [ebx+8]
 	dec	dword [eax+4]
-	jnz	_641
+	jnz	_678
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_641:
+_678:
 	mov	eax,0
-	jmp	_637
-_637:
+	jmp	_674
+_674:
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
@@ -615,42 +627,42 @@ __bb_yengine_init:
 	mov	dword [ebp-16],0
 	mov	dword [ebp-20],0
 	push	ebp
-	push	_677
+	push	_714
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_642
+	push	_679
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_645
+	jne	_682
 	call	_brl_blitz_NullObjectError
-_645:
+_682:
 	push	0
 	push	0
 	call	_bbCreateLight
 	add	esp,8
 	mov	dword [ebx+16],eax
-	push	_647
+	push	_684
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_649
+	jne	_686
 	call	_brl_blitz_NullObjectError
-_649:
+_686:
 	push	0
 	call	_bbCreateCamera
 	add	esp,4
 	mov	dword [ebx+12],eax
-	push	_651
+	push	_688
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_653
+	jne	_690
 	call	_brl_blitz_NullObjectError
-_653:
+_690:
 	push	0
 	push	-1065353216
 	push	0
@@ -658,50 +670,50 @@ _653:
 	push	dword [ebx+12]
 	call	_bbPositionEntity
 	add	esp,20
-	push	_654
+	push	_691
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_656
+	jne	_693
 	call	_brl_blitz_NullObjectError
-_656:
+_693:
 	mov	ebx,dword [ebx+8]
 	cmp	ebx,_bbNullObject
-	jne	_658
+	jne	_695
 	call	_brl_blitz_NullObjectError
-_658:
+_695:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
 	add	esp,4
-	push	_659
+	push	_696
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	dword [ebp-8],30
-	push	_661
+	push	_698
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,1000
 	cdq
 	idiv	dword [ebp-8]
 	mov	dword [ebp-12],eax
-	push	_663
+	push	_700
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	call	_bbMilliSecs
 	sub	eax,dword [ebp-12]
 	mov	dword [ebp-16],eax
-	push	_665
+	push	_702
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	jmp	_22
 _24:
-	push	_666
+	push	_703
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 _27:
-	push	_667
+	push	_704
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	call	_bbMilliSecs
@@ -711,37 +723,37 @@ _25:
 	cmp	dword [ebp-20],0
 	je	_27
 _26:
-	push	_669
+	push	_706
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_671
+	jne	_708
 	call	_brl_blitz_NullObjectError
-_671:
+_708:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+52]
 	add	esp,4
-	push	_672
+	push	_709
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	1065353216
 	call	_bbRenderWorld
 	add	esp,4
-	push	_673
+	push	_710
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_675
+	jne	_712
 	call	_brl_blitz_NullObjectError
-_675:
+_712:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+56]
 	add	esp,4
-	push	_676
+	push	_713
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	1
@@ -755,8 +767,8 @@ _22:
 	je	_24
 _23:
 	mov	ebx,0
-	jmp	_236
-_236:
+	jmp	_248
+_248:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -771,40 +783,40 @@ __bb_yengine_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_691
+	push	_728
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_682
+	push	_719
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_684
+	jne	_721
 	call	_brl_blitz_NullObjectError
-_684:
+_721:
 	cmp	dword [ebx+8],_bbNullObject
-	je	_685
-	push	_686
+	je	_722
+	push	_723
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_688
+	jne	_725
 	call	_brl_blitz_NullObjectError
-_688:
+_725:
 	mov	ebx,dword [ebx+8]
 	cmp	ebx,_bbNullObject
-	jne	_690
+	jne	_727
 	call	_brl_blitz_NullObjectError
-_690:
+_727:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+52]
 	add	esp,4
-_685:
+_722:
 	mov	ebx,0
-	jmp	_239
-_239:
+	jmp	_251
+_251:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -819,40 +831,40 @@ __bb_yengine_twodupdate:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_701
+	push	_738
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_692
+	push	_729
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_694
+	jne	_731
 	call	_brl_blitz_NullObjectError
-_694:
+_731:
 	cmp	dword [ebx+8],_bbNullObject
-	je	_695
-	push	_696
+	je	_732
+	push	_733
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_698
+	jne	_735
 	call	_brl_blitz_NullObjectError
-_698:
+_735:
 	mov	ebx,dword [ebx+8]
 	cmp	ebx,_bbNullObject
-	jne	_700
+	jne	_737
 	call	_brl_blitz_NullObjectError
-_700:
+_737:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+56]
 	add	esp,4
-_695:
+_732:
 	mov	ebx,0
-	jmp	_242
-_242:
+	jmp	_254
+_254:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -867,12 +879,12 @@ __bb_yengine_render:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_702
+	push	_739
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	mov	ebx,0
-	jmp	_245
-_245:
+	jmp	_257
+_257:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -892,66 +904,66 @@ __bb_yengine_add_world:
 	mov	eax,dword [ebp+16]
 	mov	dword [ebp-12],eax
 	push	ebp
-	push	_724
+	push	_761
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_703
+	push	_740
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_705
+	jne	_742
 	call	_brl_blitz_NullObjectError
-_705:
+_742:
 	mov	ebx,dword [ebp-12]
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+12]
 	dec	dword [eax+4]
-	jnz	_710
+	jnz	_747
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_710:
+_747:
 	mov	dword [esi+12],ebx
-	push	_711
+	push	_748
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_713
+	jne	_750
 	call	_brl_blitz_NullObjectError
-_713:
+_750:
 	mov	ebx,dword [ebp-4]
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+16]
 	dec	dword [eax+4]
-	jnz	_718
+	jnz	_755
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_718:
+_755:
 	mov	dword [esi+16],ebx
-	push	_719
+	push	_756
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_721
+	jne	_758
 	call	_brl_blitz_NullObjectError
-_721:
+_758:
 	mov	ebx,dword [ebx+20]
 	cmp	ebx,_bbNullObject
-	jne	_723
+	jne	_760
 	call	_brl_blitz_NullObjectError
-_723:
+_760:
 	push	dword [ebp-8]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,8
 	mov	ebx,0
-	jmp	_250
-_250:
+	jmp	_262
+_262:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -976,27 +988,27 @@ __bb_yengine_change_world:
 	mov	dword [ebp-20],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_791
+	push	_828
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_726
+	push	_763
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	dword [ebp-16],_bbNullObject
-	push	_728
+	push	_765
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_731
+	jne	_768
 	call	_brl_blitz_NullObjectError
-_731:
+_768:
 	mov	edi,dword [ebx+20]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_734
+	jne	_771
 	call	_brl_blitz_NullObjectError
-_734:
+_771:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -1006,9 +1018,9 @@ _734:
 _30:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_739
+	jne	_776
 	call	_brl_blitz_NullObjectError
-_739:
+_776:
 	push	_bb_yworld
 	push	ebx
 	mov	eax,dword [ebx]
@@ -1020,32 +1032,32 @@ _739:
 	mov	dword [ebp-20],eax
 	cmp	dword [ebp-20],_bbNullObject
 	je	_28
-	push	_740
+	push	_777
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-20]
 	cmp	ebx,_bbNullObject
-	jne	_742
+	jne	_779
 	call	_brl_blitz_NullObjectError
-_742:
+_779:
 	push	dword [ebp-8]
 	push	dword [ebx+12]
 	call	_bbStringCompare
 	add	esp,8
 	cmp	eax,0
-	jne	_743
-	push	_744
+	jne	_780
+	push	_781
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,dword [ebp-20]
 	mov	dword [ebp-16],eax
-_743:
+_780:
 _28:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_737
+	jne	_774
 	call	_brl_blitz_NullObjectError
-_737:
+_774:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -1053,18 +1065,18 @@ _737:
 	cmp	eax,0
 	jne	_30
 _29:
-	push	_745
+	push	_782
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-16],_bbNullObject
-	jne	_746
-	push	_747
+	jne	_783
+	push	_784
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,0
-	jmp	_255
-_746:
-	push	_748
+	jmp	_267
+_783:
+	push	_785
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,dword [ebp-12]
@@ -1072,69 +1084,69 @@ _746:
 	sete	al
 	movzx	eax,al
 	cmp	eax,0
-	je	_749
+	je	_786
 	mov	eax,dword [ebp-16]
 	cmp	eax,_bbNullObject
 	setne	al
 	movzx	eax,al
-_749:
+_786:
 	cmp	eax,0
-	je	_751
-	push	_752
+	je	_788
+	push	_789
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-16]
 	cmp	ebx,_bbNullObject
-	jne	_754
+	jne	_791
 	call	_brl_blitz_NullObjectError
-_754:
+_791:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
 	add	esp,4
-_751:
-	push	_755
+_788:
+	push	_792
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_757
+	jne	_794
 	call	_brl_blitz_NullObjectError
-_757:
+_794:
 	cmp	dword [ebx+8],_bbNullObject
-	je	_758
-	push	_759
+	je	_795
+	push	_796
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_761
+	jne	_798
 	call	_brl_blitz_NullObjectError
-_761:
+_798:
 	mov	ebx,dword [ebx+8]
 	cmp	ebx,_bbNullObject
-	jne	_763
+	jne	_800
 	call	_brl_blitz_NullObjectError
-_763:
+_800:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+76]
 	add	esp,4
-_758:
-	push	_764
+_795:
+	push	_801
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_766
+	jne	_803
 	call	_brl_blitz_NullObjectError
-_766:
+_803:
 	mov	edi,dword [ebx+20]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_769
+	jne	_806
 	call	_brl_blitz_NullObjectError
-_769:
+_806:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -1144,9 +1156,9 @@ _769:
 _33:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_774
+	jne	_811
 	call	_brl_blitz_NullObjectError
-_774:
+_811:
 	push	_bb_yworld
 	push	ebx
 	mov	eax,dword [ebx]
@@ -1158,14 +1170,14 @@ _774:
 	mov	dword [ebp-20],eax
 	cmp	dword [ebp-20],_bbNullObject
 	je	_31
-	push	_775
+	push	_812
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-20]
 	cmp	ebx,_bbNullObject
-	jne	_777
+	jne	_814
 	call	_brl_blitz_NullObjectError
-_777:
+_814:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+76]
@@ -1173,9 +1185,9 @@ _777:
 _31:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_772
+	jne	_809
 	call	_brl_blitz_NullObjectError
-_772:
+_809:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -1183,44 +1195,44 @@ _772:
 	cmp	eax,0
 	jne	_33
 _32:
-	push	_778
+	push	_815
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_780
+	jne	_817
 	call	_brl_blitz_NullObjectError
-_780:
+_817:
 	mov	ebx,dword [ebp-16]
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+8]
 	dec	dword [eax+4]
-	jnz	_785
+	jnz	_822
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_785:
+_822:
 	mov	dword [esi+8],ebx
-	push	_786
+	push	_823
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_788
+	jne	_825
 	call	_brl_blitz_NullObjectError
-_788:
+_825:
 	mov	ebx,dword [ebx+8]
 	cmp	ebx,_bbNullObject
-	jne	_790
+	jne	_827
 	call	_brl_blitz_NullObjectError
-_790:
+_827:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+80]
 	add	esp,4
 	mov	ebx,0
-	jmp	_255
-_255:
+	jmp	_267
+_267:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -1234,10 +1246,10 @@ __bb_yengine_Create:
 	mov	ebp,esp
 	push	ebx
 	push	ebp
-	push	_799
+	push	_836
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_793
+	push	_830
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_yengine
@@ -1247,18 +1259,18 @@ __bb_yengine_Create:
 	mov	ebx,eax
 	mov	eax,dword [_bb_ye]
 	dec	dword [eax+4]
-	jnz	_797
+	jnz	_834
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_797:
+_834:
 	mov	dword [_bb_ye],ebx
-	push	_798
+	push	_835
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
-	jmp	_257
-_257:
+	jmp	_269
+_269:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -1273,7 +1285,7 @@ __bb_yworld_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_803
+	push	_840
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -1296,8 +1308,8 @@ __bb_yworld_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+16],edx
 	mov	ebx,0
-	jmp	_260
-_260:
+	jmp	_272
+_272:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -1309,31 +1321,31 @@ __bb_yworld_Delete:
 	mov	ebp,esp
 	push	ebx
 	mov	ebx,dword [ebp+8]
-_263:
+_275:
 	mov	eax,dword [ebx+16]
 	dec	dword [eax+4]
-	jnz	_806
+	jnz	_843
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_806:
+_843:
 	mov	eax,dword [ebx+12]
 	dec	dword [eax+4]
-	jnz	_808
+	jnz	_845
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_808:
+_845:
 	mov	eax,dword [ebx+8]
 	dec	dword [eax+4]
-	jnz	_810
+	jnz	_847
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_810:
+_847:
 	mov	eax,0
-	jmp	_804
-_804:
+	jmp	_841
+_841:
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
@@ -1347,29 +1359,29 @@ __bb_yworld_init:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_822
+	push	_859
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_811
+	push	_848
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_813
+	jne	_850
 	call	_brl_blitz_NullObjectError
-_813:
+_850:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+72]
 	add	esp,4
-	push	_814
+	push	_851
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_816
+	jne	_853
 	call	_brl_blitz_NullObjectError
-_816:
+_853:
 	push	_brl_linkedlist_TList
 	call	_bbObjectNew
 	add	esp,4
@@ -1377,15 +1389,15 @@ _816:
 	mov	esi,eax
 	mov	eax,dword [ebx+8]
 	dec	dword [eax+4]
-	jnz	_821
+	jnz	_858
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_821:
+_858:
 	mov	dword [ebx+8],esi
 	mov	ebx,0
-	jmp	_266
-_266:
+	jmp	_278
+_278:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -1405,23 +1417,23 @@ __bb_yworld_update:
 	mov	dword [ebp-8],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_838
+	push	_875
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_823
+	push	_860
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_826
+	jne	_863
 	call	_brl_blitz_NullObjectError
-_826:
+_863:
 	mov	edi,dword [ebx+8]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_829
+	jne	_866
 	call	_brl_blitz_NullObjectError
-_829:
+_866:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -1431,9 +1443,9 @@ _829:
 _36:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_834
+	jne	_871
 	call	_brl_blitz_NullObjectError
-_834:
+_871:
 	push	_bb_yentity
 	push	ebx
 	mov	eax,dword [ebx]
@@ -1445,14 +1457,14 @@ _834:
 	mov	dword [ebp-8],eax
 	cmp	dword [ebp-8],_bbNullObject
 	je	_34
-	push	_835
+	push	_872
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_837
+	jne	_874
 	call	_brl_blitz_NullObjectError
-_837:
+_874:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+52]
@@ -1460,9 +1472,9 @@ _837:
 _34:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_832
+	jne	_869
 	call	_brl_blitz_NullObjectError
-_832:
+_869:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -1471,8 +1483,8 @@ _832:
 	jne	_36
 _35:
 	mov	ebx,0
-	jmp	_269
-_269:
+	jmp	_281
+_281:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -1489,12 +1501,12 @@ __bb_yworld_twodupdate:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_840
+	push	_877
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	mov	ebx,0
-	jmp	_272
-_272:
+	jmp	_284
+_284:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -1513,23 +1525,23 @@ __bb_yworld_render:
 	mov	dword [ebp-8],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_856
+	push	_893
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_841
+	push	_878
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_844
+	jne	_881
 	call	_brl_blitz_NullObjectError
-_844:
+_881:
 	mov	edi,dword [ebx+8]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_847
+	jne	_884
 	call	_brl_blitz_NullObjectError
-_847:
+_884:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -1539,9 +1551,9 @@ _847:
 _39:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_852
+	jne	_889
 	call	_brl_blitz_NullObjectError
-_852:
+_889:
 	push	_bb_yentity
 	push	ebx
 	mov	eax,dword [ebx]
@@ -1553,14 +1565,14 @@ _852:
 	mov	dword [ebp-8],eax
 	cmp	dword [ebp-8],_bbNullObject
 	je	_37
-	push	_853
+	push	_890
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_855
+	jne	_892
 	call	_brl_blitz_NullObjectError
-_855:
+_892:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+56]
@@ -1568,9 +1580,9 @@ _855:
 _37:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_850
+	jne	_887
 	call	_brl_blitz_NullObjectError
-_850:
+_887:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -1579,8 +1591,8 @@ _850:
 	jne	_39
 _38:
 	mov	ebx,0
-	jmp	_275
-_275:
+	jmp	_287
+_287:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -1600,60 +1612,60 @@ __bb_yworld_add:
 	mov	eax,dword [ebp+12]
 	mov	dword [ebp-8],eax
 	push	ebp
-	push	_873
+	push	_910
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_857
+	push	_894
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_859
+	jne	_896
 	call	_brl_blitz_NullObjectError
-_859:
+_896:
 	mov	ebx,dword [ebp-4]
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+32]
 	dec	dword [eax+4]
-	jnz	_864
+	jnz	_901
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_864:
+_901:
 	mov	dword [esi+32],ebx
-	push	_865
+	push	_902
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_867
+	jne	_904
 	call	_brl_blitz_NullObjectError
-_867:
+_904:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
 	add	esp,4
-	push	_868
+	push	_905
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_870
+	jne	_907
 	call	_brl_blitz_NullObjectError
-_870:
+_907:
 	mov	ebx,dword [ebx+8]
 	cmp	ebx,_bbNullObject
-	jne	_872
+	jne	_909
 	call	_brl_blitz_NullObjectError
-_872:
+_909:
 	push	dword [ebp-8]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,8
 	mov	ebx,0
-	jmp	_279
-_279:
+	jmp	_291
+_291:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -1671,42 +1683,42 @@ __bb_yworld_remove:
 	mov	eax,dword [ebp+12]
 	mov	dword [ebp-8],eax
 	push	ebp
-	push	_882
+	push	_919
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_874
+	push	_911
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_876
+	jne	_913
 	call	_brl_blitz_NullObjectError
-_876:
+_913:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+76]
 	add	esp,4
-	push	_877
+	push	_914
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_879
+	jne	_916
 	call	_brl_blitz_NullObjectError
-_879:
+_916:
 	mov	ebx,dword [ebx+8]
 	cmp	ebx,_bbNullObject
-	jne	_881
+	jne	_918
 	call	_brl_blitz_NullObjectError
-_881:
+_918:
 	push	dword [ebp-8]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+116]
 	add	esp,8
 	mov	ebx,0
-	jmp	_283
-_283:
+	jmp	_295
+_295:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -1725,23 +1737,23 @@ __bb_yworld_remove_all:
 	mov	dword [ebp-8],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_898
+	push	_935
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_883
+	push	_920
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_886
+	jne	_923
 	call	_brl_blitz_NullObjectError
-_886:
+_923:
 	mov	edi,dword [ebx+8]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_889
+	jne	_926
 	call	_brl_blitz_NullObjectError
-_889:
+_926:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -1751,9 +1763,9 @@ _889:
 _42:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_894
+	jne	_931
 	call	_brl_blitz_NullObjectError
-_894:
+_931:
 	push	_bb_yentity
 	push	ebx
 	mov	eax,dword [ebx]
@@ -1765,14 +1777,14 @@ _894:
 	mov	dword [ebp-8],eax
 	cmp	dword [ebp-8],_bbNullObject
 	je	_40
-	push	_895
+	push	_932
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_897
+	jne	_934
 	call	_brl_blitz_NullObjectError
-_897:
+_934:
 	push	dword [ebp-8]
 	push	ebx
 	mov	eax,dword [ebx]
@@ -1781,9 +1793,9 @@ _897:
 _40:
 	mov	ebx,esi
 	cmp	ebx,_bbNullObject
-	jne	_892
+	jne	_929
 	call	_brl_blitz_NullObjectError
-_892:
+_929:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -1792,8 +1804,8 @@ _892:
 	jne	_42
 _41:
 	mov	ebx,0
-	jmp	_286
-_286:
+	jmp	_298
+_298:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -1814,23 +1826,23 @@ __bb_yworld_hide_all:
 	mov	dword [ebp-8],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_918
+	push	_955
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_899
+	push	_936
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_902
+	jne	_939
 	call	_brl_blitz_NullObjectError
-_902:
+_939:
 	mov	edi,dword [ebx+8]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_905
+	jne	_942
 	call	_brl_blitz_NullObjectError
-_905:
+_942:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -1839,9 +1851,9 @@ _905:
 	jmp	_43
 _45:
 	cmp	ebx,_bbNullObject
-	jne	_910
+	jne	_947
 	call	_brl_blitz_NullObjectError
-_910:
+_947:
 	push	_bb_yentity
 	push	ebx
 	mov	eax,dword [ebx]
@@ -1853,33 +1865,33 @@ _910:
 	mov	dword [ebp-8],eax
 	cmp	dword [ebp-8],_bbNullObject
 	je	_43
-	push	_911
+	push	_948
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_913
+	jne	_950
 	call	_brl_blitz_NullObjectError
-_913:
+_950:
 	cmp	dword [esi+24],0
-	je	_914
-	push	_915
+	je	_951
+	push	_952
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_917
+	jne	_954
 	call	_brl_blitz_NullObjectError
-_917:
+_954:
 	push	dword [esi+24]
 	call	_bbHideEntity
 	add	esp,4
-_914:
+_951:
 _43:
 	cmp	ebx,_bbNullObject
-	jne	_908
+	jne	_945
 	call	_brl_blitz_NullObjectError
-_908:
+_945:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -1888,8 +1900,8 @@ _908:
 	jne	_45
 _44:
 	mov	ebx,0
-	jmp	_289
-_289:
+	jmp	_301
+_301:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -1910,23 +1922,23 @@ __bb_yworld_show_all:
 	mov	dword [ebp-8],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_938
+	push	_975
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_919
+	push	_956
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_922
+	jne	_959
 	call	_brl_blitz_NullObjectError
-_922:
+_959:
 	mov	edi,dword [ebx+8]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_925
+	jne	_962
 	call	_brl_blitz_NullObjectError
-_925:
+_962:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -1935,9 +1947,9 @@ _925:
 	jmp	_46
 _48:
 	cmp	ebx,_bbNullObject
-	jne	_930
+	jne	_967
 	call	_brl_blitz_NullObjectError
-_930:
+_967:
 	push	_bb_yentity
 	push	ebx
 	mov	eax,dword [ebx]
@@ -1949,33 +1961,33 @@ _930:
 	mov	dword [ebp-8],eax
 	cmp	dword [ebp-8],_bbNullObject
 	je	_46
-	push	_931
+	push	_968
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_933
+	jne	_970
 	call	_brl_blitz_NullObjectError
-_933:
+_970:
 	cmp	dword [esi+24],0
-	je	_934
-	push	_935
+	je	_971
+	push	_972
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_937
+	jne	_974
 	call	_brl_blitz_NullObjectError
-_937:
+_974:
 	push	dword [esi+24]
 	call	_bbShowEntity
 	add	esp,4
-_934:
+_971:
 _46:
 	cmp	ebx,_bbNullObject
-	jne	_928
+	jne	_965
 	call	_brl_blitz_NullObjectError
-_928:
+_965:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -1984,8 +1996,8 @@ _928:
 	jne	_48
 _47:
 	mov	ebx,0
-	jmp	_292
-_292:
+	jmp	_304
+_304:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -2002,24 +2014,24 @@ __bb_yworld_Create:
 	push	esi
 	mov	dword [ebp-4],_bbNullObject
 	push	ebp
-	push	_950
+	push	_987
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_939
+	push	_976
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_yworld
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-4],eax
-	push	_941
+	push	_978
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_943
+	jne	_980
 	call	_brl_blitz_NullObjectError
-_943:
+_980:
 	push	_brl_linkedlist_TList
 	call	_bbObjectNew
 	add	esp,4
@@ -2027,18 +2039,18 @@ _943:
 	mov	esi,eax
 	mov	eax,dword [ebx+8]
 	dec	dword [eax+4]
-	jnz	_948
+	jnz	_985
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_948:
+_985:
 	mov	dword [ebx+8],esi
-	push	_949
+	push	_986
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
-	jmp	_294
-_294:
+	jmp	_306
+_306:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -2054,7 +2066,7 @@ __bb_tstw_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_952
+	push	_989
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -2063,8 +2075,8 @@ __bb_tstw_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax],_bb_tstw
 	mov	ebx,0
-	jmp	_297
-_297:
+	jmp	_309
+_309:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2075,14 +2087,14 @@ __bb_tstw_Delete:
 	push	ebp
 	mov	ebp,esp
 	mov	eax,dword [ebp+8]
-_300:
+_312:
 	mov	dword [eax],_bb_yworld
 	push	eax
 	call	__bb_yworld_Delete
 	add	esp,4
 	mov	eax,0
-	jmp	_954
-_954:
+	jmp	_991
+_991:
 	mov	esp,ebp
 	pop	ebp
 	ret
@@ -2094,18 +2106,18 @@ __bb_tstw_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_956
+	push	_993
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_955
+	push	_992
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_update
 	add	esp,4
 	mov	ebx,0
-	jmp	_303
-_303:
+	jmp	_315
+_315:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2122,30 +2134,30 @@ __bb_tstw_init:
 	mov	dword [ebp-8],0
 	mov	dword [ebp-12],0
 	push	ebp
-	push	_968
+	push	_1005
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_957
+	push	_994
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_init
 	add	esp,4
-	push	_958
+	push	_995
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
 	call	_bbCreateCube
 	add	esp,4
 	mov	dword [ebp-8],eax
-	push	_960
+	push	_997
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_962
+	jne	_999
 	call	_brl_blitz_NullObjectError
-_962:
+_999:
 	push	1073741824
 	push	dword [ebp-8]
 	push	0
@@ -2158,21 +2170,21 @@ _962:
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,8
-	push	_963
+	push	_1000
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
 	call	_bbCreateCube
 	add	esp,4
 	mov	dword [ebp-12],eax
-	push	_965
+	push	_1002
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_967
+	jne	_1004
 	call	_brl_blitz_NullObjectError
-_967:
+_1004:
 	push	1073741824
 	push	dword [ebp-12]
 	push	1073741824
@@ -2186,8 +2198,8 @@ _967:
 	call	dword [eax+64]
 	add	esp,8
 	mov	ebx,0
-	jmp	_306
-_306:
+	jmp	_318
+_318:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2201,22 +2213,22 @@ __bb_tstw_Create:
 	push	ebx
 	mov	dword [ebp-4],_bbNullObject
 	push	ebp
-	push	_974
+	push	_1011
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_971
+	push	_1008
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_tstw
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-4],eax
-	push	_973
+	push	_1010
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
-	jmp	_308
-_308:
+	jmp	_320
+_320:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2231,7 +2243,7 @@ __bb_yentity_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_978
+	push	_1015
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -2262,15 +2274,15 @@ __bb_yentity_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+32],edx
 	mov	eax,dword [ebp-4]
-	fld	dword [_2483]
+	fld	dword [_2687]
 	fstp	dword [eax+36]
 	mov	edx,_bbNullObject
 	inc	dword [edx+4]
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+40],edx
 	mov	ebx,0
-	jmp	_311
-_311:
+	jmp	_323
+_323:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2282,31 +2294,31 @@ __bb_yentity_Delete:
 	mov	ebp,esp
 	push	ebx
 	mov	ebx,dword [ebp+8]
-_314:
+_326:
 	mov	eax,dword [ebx+40]
 	dec	dword [eax+4]
-	jnz	_981
+	jnz	_1018
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_981:
+_1018:
 	mov	eax,dword [ebx+32]
 	dec	dword [eax+4]
-	jnz	_983
+	jnz	_1020
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_983:
+_1020:
 	mov	eax,dword [ebx+28]
 	dec	dword [eax+4]
-	jnz	_985
+	jnz	_1022
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_985:
+_1022:
 	mov	eax,0
-	jmp	_979
-_979:
+	jmp	_1016
+_1016:
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
@@ -2322,43 +2334,43 @@ __bb_yentity_init:
 	mov	dword [ebp-4],eax
 	mov	eax,ebp
 	push	eax
-	push	_1007
+	push	_1044
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_986
+	push	_1023
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_988
+	jne	_1025
 	call	_brl_blitz_NullObjectError
-_988:
+_1025:
 	cmp	dword [ebx+24],0
-	je	_989
-	push	_990
+	je	_1026
+	push	_1027
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,dword [ebp-4]
 	mov	dword [ebp-8],eax
 	cmp	dword [ebp-8],_bbNullObject
-	jne	_992
+	jne	_1029
 	call	_brl_blitz_NullObjectError
-_992:
+_1029:
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_994
+	jne	_1031
 	call	_brl_blitz_NullObjectError
-_994:
+_1031:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_996
+	jne	_1033
 	call	_brl_blitz_NullObjectError
-_996:
+_1033:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_998
+	jne	_1035
 	call	_brl_blitz_NullObjectError
-_998:
+_1035:
 	push	0
 	push	dword [ebx+16]
 	push	dword [esi+12]
@@ -2367,15 +2379,15 @@ _998:
 	push	dword [eax+24]
 	call	_bbPositionEntity
 	add	esp,20
-_989:
-	push	_999
+_1026:
+	push	_1036
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1001
+	jne	_1038
 	call	_brl_blitz_NullObjectError
-_1001:
+_1038:
 	push	0
 	call	dword [_bb_ytimer+52]
 	add	esp,4
@@ -2383,15 +2395,15 @@ _1001:
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+40]
 	dec	dword [eax+4]
-	jnz	_1006
+	jnz	_1043
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1006:
+_1043:
 	mov	dword [esi+40],ebx
 	mov	ebx,0
-	jmp	_317
-_317:
+	jmp	_329
+_329:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -2409,82 +2421,82 @@ __bb_yentity_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1031
+	push	_1068
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1008
+	push	_1045
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1010
+	jne	_1047
 	call	_brl_blitz_NullObjectError
-_1010:
+_1047:
 	cmp	dword [ebx+24],0
-	jne	_1011
-	push	_1012
+	jne	_1048
+	push	_1049
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,0
-	jmp	_320
-_1011:
-	push	_1013
+	jmp	_332
+_1048:
+	push	_1050
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1015
+	jne	_1052
 	call	_brl_blitz_NullObjectError
-_1015:
+_1052:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1018
+	jne	_1055
 	call	_brl_blitz_NullObjectError
-_1018:
+_1055:
 	push	0
 	push	dword [esi+24]
 	call	_bbEntityX
 	add	esp,8
 	fstp	dword [ebx+8]
-	push	_1019
+	push	_1056
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1021
+	jne	_1058
 	call	_brl_blitz_NullObjectError
-_1021:
+_1058:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1024
+	jne	_1061
 	call	_brl_blitz_NullObjectError
-_1024:
+_1061:
 	push	0
 	push	dword [esi+24]
 	call	_bbEntityY
 	add	esp,8
 	fstp	dword [ebx+12]
-	push	_1025
+	push	_1062
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1027
+	jne	_1064
 	call	_brl_blitz_NullObjectError
-_1027:
+_1064:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1030
+	jne	_1067
 	call	_brl_blitz_NullObjectError
-_1030:
+_1067:
 	push	0
 	push	dword [esi+24]
 	call	_bbEntityZ
 	add	esp,8
 	fstp	dword [ebx+16]
 	mov	ebx,0
-	jmp	_320
-_320:
+	jmp	_332
+_332:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -2500,12 +2512,12 @@ __bb_yentity_render:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1032
+	push	_1069
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	mov	ebx,0
-	jmp	_323
-_323:
+	jmp	_335
+_335:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2526,37 +2538,37 @@ __bb_yentity_move_by:
 	fld	dword [ebp+20]
 	fstp	dword [ebp-16]
 	push	ebp
-	push	_1040
+	push	_1077
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1033
+	push	_1070
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1035
+	jne	_1072
 	call	_brl_blitz_NullObjectError
-_1035:
+_1072:
 	cmp	dword [ebx+24],0
-	je	_1036
-	push	_1037
+	je	_1073
+	push	_1074
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1039
+	jne	_1076
 	call	_brl_blitz_NullObjectError
-_1039:
+_1076:
 	push	dword [ebp-16]
 	push	dword [ebp-12]
 	push	dword [ebp-8]
 	push	dword [ebx+24]
 	call	_bbMoveEntity
 	add	esp,16
-_1036:
+_1073:
 	mov	ebx,0
-	jmp	_329
-_329:
+	jmp	_341
+_341:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2577,17 +2589,17 @@ __bb_yentity_set_pos:
 	fld	dword [ebp+20]
 	fstp	dword [ebp-16]
 	push	ebp
-	push	_1047
+	push	_1084
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1044
+	push	_1081
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1046
+	jne	_1083
 	call	_brl_blitz_NullObjectError
-_1046:
+_1083:
 	push	0
 	push	dword [ebp-16]
 	push	dword [ebp-12]
@@ -2596,8 +2608,8 @@ _1046:
 	call	_bbPositionEntity
 	add	esp,20
 	mov	ebx,0
-	jmp	_335
-_335:
+	jmp	_347
+_347:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2619,35 +2631,35 @@ __bb_yentity_get_by_type:
 	mov	dword [ebp-16],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_1072
+	push	_1109
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1048
+	push	_1085
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_brl_linkedlist_TList
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-12],eax
-	push	_1050
+	push	_1087
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1053
+	jne	_1090
 	call	_brl_blitz_NullObjectError
-_1053:
+_1090:
 	mov	ebx,dword [ebx+32]
 	cmp	ebx,_bbNullObject
-	jne	_1055
+	jne	_1092
 	call	_brl_blitz_NullObjectError
-_1055:
+_1092:
 	mov	edi,dword [ebx+8]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_1058
+	jne	_1095
 	call	_brl_blitz_NullObjectError
-_1058:
+_1095:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -2656,9 +2668,9 @@ _1058:
 	jmp	_50
 _52:
 	cmp	ebx,_bbNullObject
-	jne	_1063
+	jne	_1100
 	call	_brl_blitz_NullObjectError
-_1063:
+_1100:
 	push	_bb_yentity
 	push	ebx
 	mov	eax,dword [ebx]
@@ -2670,39 +2682,39 @@ _1063:
 	mov	dword [ebp-16],eax
 	cmp	dword [ebp-16],_bbNullObject
 	je	_50
-	push	_1064
+	push	_1101
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-16]
 	cmp	esi,_bbNullObject
-	jne	_1066
+	jne	_1103
 	call	_brl_blitz_NullObjectError
-_1066:
+_1103:
 	push	dword [ebp-8]
 	push	dword [esi+28]
 	call	_bbStringCompare
 	add	esp,8
 	cmp	eax,0
-	jne	_1067
-	push	_1068
+	jne	_1104
+	push	_1105
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-12]
 	cmp	esi,_bbNullObject
-	jne	_1070
+	jne	_1107
 	call	_brl_blitz_NullObjectError
-_1070:
+_1107:
 	push	dword [ebp-16]
 	push	esi
 	mov	eax,dword [esi]
 	call	dword [eax+64]
 	add	esp,8
-_1067:
+_1104:
 _50:
 	cmp	ebx,_bbNullObject
-	jne	_1061
+	jne	_1098
 	call	_brl_blitz_NullObjectError
-_1061:
+_1098:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -2710,12 +2722,12 @@ _1061:
 	cmp	eax,0
 	jne	_52
 _51:
-	push	_1071
+	push	_1108
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-12]
-	jmp	_339
-_339:
+	jmp	_351
+_351:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -2748,27 +2760,27 @@ __bb_yentity_collide:
 	mov	dword [ebp-36],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_1115
+	push	_1152
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1075
+	push	_1112
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	fldz
 	fstp	dword [ebp-24]
-	push	_1077
+	push	_1114
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1080
+	jne	_1117
 	call	_brl_blitz_NullObjectError
-_1080:
+_1117:
 	push	dword [ebx+24]
 	call	_bbCreatePivot
 	add	esp,4
 	mov	dword [ebp-28],eax
-	push	_1081
+	push	_1118
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -2778,29 +2790,29 @@ _1080:
 	push	dword [ebp-28]
 	call	_bbTranslateEntity
 	add	esp,20
-	push	_1082
+	push	_1119
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1085
+	jne	_1122
 	call	_brl_blitz_NullObjectError
-_1085:
+_1122:
 	push	dword [ebp-8]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,8
 	mov	dword [ebp-32],eax
-	push	_1086
+	push	_1123
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	edi,dword [ebp-32]
 	mov	ebx,edi
 	cmp	ebx,_bbNullObject
-	jne	_1090
+	jne	_1127
 	call	_brl_blitz_NullObjectError
-_1090:
+_1127:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+140]
@@ -2809,9 +2821,9 @@ _1090:
 	jmp	_53
 _55:
 	cmp	ebx,_bbNullObject
-	jne	_1095
+	jne	_1132
 	call	_brl_blitz_NullObjectError
-_1095:
+_1132:
 	push	_bb_yentity
 	push	ebx
 	mov	eax,dword [ebx]
@@ -2823,27 +2835,27 @@ _1095:
 	mov	dword [ebp-36],eax
 	cmp	dword [ebp-36],_bbNullObject
 	je	_53
-	push	_1096
+	push	_1133
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-36]
 	cmp	esi,_bbNullObject
-	jne	_1098
+	jne	_1135
 	call	_brl_blitz_NullObjectError
-_1098:
+_1135:
 	push	dword [esi+24]
 	push	dword [ebp-28]
 	call	_bbEntityDistance
 	add	esp,8
 	fstp	dword [ebp-24]
-	push	_1099
+	push	_1136
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1101
+	jne	_1138
 	call	_brl_blitz_NullObjectError
-_1101:
+_1138:
 	fld	dword [ebp-24]
 	fld	dword [esi+36]
 	fxch	st1
@@ -2853,43 +2865,43 @@ _1101:
 	setb	al
 	movzx	eax,al
 	cmp	eax,0
-	je	_1102
+	je	_1139
 	mov	eax,dword [ebp-36]
 	cmp	eax,dword [ebp-4]
 	setne	al
 	movzx	eax,al
-_1102:
+_1139:
 	cmp	eax,0
-	je	_1104
-	push	_1105
+	je	_1141
+	push	_1142
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-28]
 	call	_bbFreeEntity
 	add	esp,4
-	push	_1106
+	push	_1143
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-32]
 	cmp	ebx,_bbNullObject
-	jne	_1108
+	jne	_1145
 	call	_brl_blitz_NullObjectError
-_1108:
+_1145:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+52]
 	add	esp,4
-	push	_1109
+	push	_1146
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-36]
-	jmp	_346
-_1104:
+	jmp	_358
+_1141:
 _53:
 	cmp	ebx,_bbNullObject
-	jne	_1093
+	jne	_1130
 	call	_brl_blitz_NullObjectError
-_1093:
+_1130:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
@@ -2897,30 +2909,30 @@ _1093:
 	cmp	eax,0
 	jne	_55
 _54:
-	push	_1110
+	push	_1147
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-28]
 	call	_bbFreeEntity
 	add	esp,4
-	push	_1111
+	push	_1148
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-32]
 	cmp	ebx,_bbNullObject
-	jne	_1113
+	jne	_1150
 	call	_brl_blitz_NullObjectError
-_1113:
+_1150:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+52]
 	add	esp,4
-	push	_1114
+	push	_1151
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,_bbNullObject
-	jmp	_346
-_346:
+	jmp	_358
+_358:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -2937,32 +2949,32 @@ __bb_yentity_remove:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1125
+	push	_1162
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1118
+	push	_1155
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1120
+	jne	_1157
 	call	_brl_blitz_NullObjectError
-_1120:
+_1157:
 	push	dword [ebx+24]
 	call	_bbFreeEntity
 	add	esp,4
-	push	_1121
+	push	_1158
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1123
+	jne	_1160
 	call	_brl_blitz_NullObjectError
-_1123:
+_1160:
 	mov	dword [ebx+24],0
 	mov	ebx,0
-	jmp	_349
-_349:
+	jmp	_361
+_361:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -2979,46 +2991,46 @@ __bb_yentity_visable:
 	mov	eax,dword [ebp+12]
 	mov	dword [ebp-8],eax
 	push	ebp
-	push	_1136
+	push	_1173
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1126
+	push	_1163
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-8],0
-	jne	_1127
-	push	_1128
+	jne	_1164
+	push	_1165
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1130
+	jne	_1167
 	call	_brl_blitz_NullObjectError
-_1130:
+_1167:
 	push	dword [ebx+24]
 	call	_bbHideEntity
 	add	esp,4
-_1127:
-	push	_1131
+_1164:
+	push	_1168
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-8],1
-	jne	_1132
-	push	_1133
+	jne	_1169
+	push	_1170
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1135
+	jne	_1172
 	call	_brl_blitz_NullObjectError
-_1135:
+_1172:
 	push	dword [ebx+24]
 	call	_bbShowEntity
 	add	esp,4
-_1132:
+_1169:
 	mov	ebx,0
-	jmp	_353
-_353:
+	jmp	_365
+_365:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3035,24 +3047,24 @@ __bb_yentity_alpha:
 	fld	dword [ebp+12]
 	fstp	dword [ebp-8]
 	push	ebp
-	push	_1141
+	push	_1178
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1138
+	push	_1175
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1140
+	jne	_1177
 	call	_brl_blitz_NullObjectError
-_1140:
+_1177:
 	push	dword [ebp-8]
 	push	dword [ebx+24]
 	call	_bbEntityAlpha
 	add	esp,8
 	mov	ebx,0
-	jmp	_357
-_357:
+	jmp	_369
+_369:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3069,12 +3081,12 @@ __bb_yentity_fadeOut:
 	fld	dword [ebp+12]
 	fstp	dword [ebp-8]
 	push	ebp
-	push	_1143
+	push	_1180
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	mov	ebx,0
-	jmp	_361
-_361:
+	jmp	_373
+_373:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3092,48 +3104,48 @@ __bb_yentity_click:
 	mov	dword [ebp-8],eax
 	mov	dword [ebp-12],0
 	push	ebp
-	push	_1164
+	push	_1201
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1145
+	push	_1182
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1147
+	jne	_1184
 	call	_brl_blitz_NullObjectError
-_1147:
+_1184:
 	push	1
 	push	1
 	push	dword [ebx+24]
 	call	_bbEntityPickMode
 	add	esp,12
-	push	_1148
+	push	_1185
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-8]
 	call	_bbMouseDown
 	add	esp,4
 	cmp	eax,0
-	je	_1149
-	push	_1150
+	je	_1186
+	push	_1187
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1153
+	jne	_1190
 	call	_brl_blitz_NullObjectError
-_1153:
+_1190:
 	mov	ebx,dword [ebx+32]
 	cmp	ebx,_bbNullObject
-	jne	_1155
+	jne	_1192
 	call	_brl_blitz_NullObjectError
-_1155:
+_1192:
 	mov	ebx,dword [ebx+16]
 	cmp	ebx,_bbNullObject
-	jne	_1157
+	jne	_1194
 	call	_brl_blitz_NullObjectError
-_1157:
+_1194:
 	call	_bbMouseY
 	mov	dword [ebp+-16],eax
 	fild	dword [ebp+-16]
@@ -3148,30 +3160,30 @@ _1157:
 	call	_bbCameraPick
 	add	esp,12
 	mov	dword [ebp-12],eax
-	push	_1158
+	push	_1195
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1160
+	jne	_1197
 	call	_brl_blitz_NullObjectError
-_1160:
+_1197:
 	mov	eax,dword [ebx+24]
 	cmp	dword [ebp-12],eax
-	jne	_1161
-	push	_1162
+	jne	_1198
+	push	_1199
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,1
-	jmp	_365
-_1161:
-_1149:
-	push	_1163
+	jmp	_377
+_1198:
+_1186:
+	push	_1200
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,0
-	jmp	_365
-_365:
+	jmp	_377
+_377:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3192,17 +3204,17 @@ __bb_yentity_sxyz:
 	fld	dword [ebp+20]
 	fstp	dword [ebp-16]
 	push	ebp
-	push	_1170
+	push	_1207
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1167
+	push	_1204
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1169
+	jne	_1206
 	call	_brl_blitz_NullObjectError
-_1169:
+_1206:
 	push	0
 	push	dword [ebp-16]
 	push	dword [ebp-12]
@@ -3211,8 +3223,8 @@ _1169:
 	call	_bbPositionEntity
 	add	esp,20
 	mov	ebx,0
-	jmp	_371
-_371:
+	jmp	_383
+_383:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3232,27 +3244,27 @@ __bb_yentity_sy:
 	fstp	dword [ebp-8]
 	mov	eax,ebp
 	push	eax
-	push	_1178
+	push	_1215
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1171
+	push	_1208
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_1173
+	jne	_1210
 	call	_brl_blitz_NullObjectError
-_1173:
+_1210:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1175
+	jne	_1212
 	call	_brl_blitz_NullObjectError
-_1175:
+_1212:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1177
+	jne	_1214
 	call	_brl_blitz_NullObjectError
-_1177:
+_1214:
 	push	0
 	push	0
 	push	dword [ebx+24]
@@ -3271,8 +3283,8 @@ _1177:
 	call	_bbPositionEntity
 	add	esp,20
 	mov	ebx,0
-	jmp	_375
-_375:
+	jmp	_387
+_387:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -3289,17 +3301,17 @@ __bb_yentity_printxyz:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1189
+	push	_1226
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1180
+	push	_1217
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1182
+	jne	_1219
 	call	_brl_blitz_NullObjectError
-_1182:
+_1219:
 	push	_56
 	push	dword [ebx+8]
 	call	_bbStringFromFloat
@@ -3310,14 +3322,14 @@ _1182:
 	push	eax
 	call	_brl_standardio_Print
 	add	esp,4
-	push	_1183
+	push	_1220
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1185
+	jne	_1222
 	call	_brl_blitz_NullObjectError
-_1185:
+_1222:
 	push	_57
 	push	dword [ebx+12]
 	call	_bbStringFromFloat
@@ -3328,14 +3340,14 @@ _1185:
 	push	eax
 	call	_brl_standardio_Print
 	add	esp,4
-	push	_1186
+	push	_1223
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1188
+	jne	_1225
 	call	_brl_blitz_NullObjectError
-_1188:
+_1225:
 	push	_58
 	push	dword [ebx+16]
 	call	_bbStringFromFloat
@@ -3347,8 +3359,8 @@ _1188:
 	call	_brl_standardio_Print
 	add	esp,4
 	mov	ebx,0
-	jmp	_378
-_378:
+	jmp	_390
+_390:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3373,90 +3385,90 @@ __bb_yentity_Create:
 	fstp	dword [ebp-20]
 	mov	dword [ebp-24],_bbNullObject
 	push	ebp
-	push	_1221
+	push	_1258
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1190
+	push	_1227
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_yentity
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-24],eax
-	push	_1192
+	push	_1229
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1194
+	jne	_1231
 	call	_brl_blitz_NullObjectError
-_1194:
+_1231:
 	fld	dword [ebp-4]
 	fstp	dword [ebx+8]
-	push	_1196
+	push	_1233
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1198
+	jne	_1235
 	call	_brl_blitz_NullObjectError
-_1198:
+_1235:
 	fld	dword [ebp-8]
 	fstp	dword [ebx+12]
-	push	_1200
+	push	_1237
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1202
+	jne	_1239
 	call	_brl_blitz_NullObjectError
-_1202:
+_1239:
 	fld	dword [ebp-12]
 	fstp	dword [ebx+16]
-	push	_1204
+	push	_1241
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1206
+	jne	_1243
 	call	_brl_blitz_NullObjectError
-_1206:
+_1243:
 	fld	dword [ebp-20]
 	fstp	dword [ebx+20]
-	push	_1208
+	push	_1245
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1210
+	jne	_1247
 	call	_brl_blitz_NullObjectError
-_1210:
+_1247:
 	mov	eax,dword [ebp-16]
 	mov	dword [ebx+24],eax
-	push	_1212
+	push	_1249
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-24]
 	cmp	esi,_bbNullObject
-	jne	_1214
+	jne	_1251
 	call	_brl_blitz_NullObjectError
-_1214:
+_1251:
 	mov	ebx,_49
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+28]
 	dec	dword [eax+4]
-	jnz	_1219
+	jnz	_1256
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1219:
+_1256:
 	mov	dword [esi+28],ebx
-	push	_1220
+	push	_1257
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
-	jmp	_385
-_385:
+	jmp	_397
+_397:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -3472,7 +3484,7 @@ __bb_ytimer_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1222
+	push	_1259
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -3487,8 +3499,8 @@ __bb_ytimer_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+16],0
 	mov	ebx,0
-	jmp	_388
-_388:
+	jmp	_400
+_400:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3498,10 +3510,10 @@ _388:
 __bb_ytimer_Delete:
 	push	ebp
 	mov	ebp,esp
-_391:
+_403:
 	mov	eax,0
-	jmp	_1223
-_1223:
+	jmp	_1260
+_1260:
 	mov	esp,ebp
 	pop	ebp
 	ret
@@ -3514,80 +3526,80 @@ __bb_ytimer_finished:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1251
+	push	_1288
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1224
+	push	_1261
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1226
+	jne	_1263
 	call	_brl_blitz_NullObjectError
-_1226:
+_1263:
 	mov	dword [ebx+16],0
-	push	_1228
+	push	_1265
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1230
+	jne	_1267
 	call	_brl_blitz_NullObjectError
-_1230:
+_1267:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1233
+	jne	_1270
 	call	_brl_blitz_NullObjectError
-_1233:
+_1270:
 	mov	eax,dword [esi+8]
 	add	eax,1
 	mov	dword [ebx+8],eax
-	push	_1234
+	push	_1271
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1236
+	jne	_1273
 	call	_brl_blitz_NullObjectError
-_1236:
+_1273:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1238
+	jne	_1275
 	call	_brl_blitz_NullObjectError
-_1238:
+_1275:
 	mov	eax,dword [esi+12]
 	cmp	dword [ebx+8],eax
-	jl	_1239
-	push	_1240
+	jl	_1276
+	push	_1277
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1242
+	jne	_1279
 	call	_brl_blitz_NullObjectError
-_1242:
+_1279:
 	mov	dword [ebx+8],0
-	push	_1244
+	push	_1281
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1246
+	jne	_1283
 	call	_brl_blitz_NullObjectError
-_1246:
+_1283:
 	mov	dword [ebx+16],1
-_1239:
-	push	_1248
+_1276:
+	push	_1285
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1250
+	jne	_1287
 	call	_brl_blitz_NullObjectError
-_1250:
+_1287:
 	mov	ebx,dword [ebx+16]
-	jmp	_394
-_394:
+	jmp	_406
+_406:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -3604,56 +3616,56 @@ __bb_ytimer_Create:
 	mov	dword [ebp-4],eax
 	mov	dword [ebp-8],_bbNullObject
 	push	ebp
-	push	_1268
+	push	_1305
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1252
+	push	_1289
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_ytimer
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-8],eax
-	push	_1254
+	push	_1291
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,dword [ebp-4]
 	imul	eax,60
 	mov	dword [ebp-4],eax
-	push	_1255
+	push	_1292
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_1257
+	jne	_1294
 	call	_brl_blitz_NullObjectError
-_1257:
+_1294:
 	mov	dword [ebx+8],0
-	push	_1259
+	push	_1296
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_1261
+	jne	_1298
 	call	_brl_blitz_NullObjectError
-_1261:
+_1298:
 	mov	eax,dword [ebp-4]
 	mov	dword [ebx+12],eax
-	push	_1263
+	push	_1300
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_1265
+	jne	_1302
 	call	_brl_blitz_NullObjectError
-_1265:
+_1302:
 	mov	dword [ebx+16],0
-	push	_1267
+	push	_1304
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-8]
-	jmp	_397
-_397:
+	jmp	_409
+_409:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3671,33 +3683,33 @@ _bb_ycount_filis_in_dir:
 	mov	dword [ebp-12],0
 	mov	dword [ebp-16],_bbEmptyString
 	push	ebp
-	push	_1288
+	push	_1325
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1271
+	push	_1308
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	_brl_filesystem_ReadDir
 	add	esp,4
 	mov	dword [ebp-8],eax
-	push	_1273
+	push	_1310
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	dword [ebp-12],0
-	push	_1275
+	push	_1312
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 _61:
 _59:
-	push	_1276
+	push	_1313
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-8]
 	call	_brl_filesystem_NextFile
 	add	esp,4
 	mov	dword [ebp-16],eax
-	push	_1278
+	push	_1315
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_1
@@ -3705,13 +3717,13 @@ _59:
 	call	_bbStringCompare
 	add	esp,8
 	cmp	eax,0
-	jne	_1279
-	push	_1280
+	jne	_1316
+	push	_1317
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	jmp	_60
-_1279:
-	push	_1281
+_1316:
+	push	_1318
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_62
@@ -3722,7 +3734,7 @@ _1279:
 	sete	al
 	movzx	eax,al
 	cmp	eax,0
-	jne	_1282
+	jne	_1319
 	push	_63
 	push	dword [ebp-16]
 	call	_bbStringCompare
@@ -3730,26 +3742,26 @@ _1279:
 	cmp	eax,0
 	sete	al
 	movzx	eax,al
-_1282:
+_1319:
 	cmp	eax,0
-	je	_1284
-	push	_1285
+	je	_1321
+	push	_1322
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	jmp	_59
-_1284:
-	push	_1286
+_1321:
+	push	_1323
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	add	dword [ebp-12],1
 	jmp	_61
 _60:
-	push	_1287
+	push	_1324
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-12]
-	jmp	_400
-_400:
+	jmp	_412
+_412:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3764,45 +3776,45 @@ _bb_ysign:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1301
+	push	_1338
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1292
+	push	_1329
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-4],0
-	jle	_1293
-	push	_1294
+	jle	_1330
+	push	_1331
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,1
-	jmp	_403
-_1293:
-	push	_1295
+	jmp	_415
+_1330:
+	push	_1332
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-4],0
-	jge	_1296
-	push	_1297
+	jge	_1333
+	push	_1334
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,-1
-	jmp	_403
-_1296:
-	push	_1298
+	jmp	_415
+_1333:
+	push	_1335
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-4],0
-	jne	_1299
-	push	_1300
+	jne	_1336
+	push	_1337
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,0
-	jmp	_403
-_1299:
+	jmp	_415
+_1336:
 	mov	ebx,0
-	jmp	_403
-_403:
+	jmp	_415
+_415:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3817,46 +3829,46 @@ _bb_ylabs:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1313
+	push	_1350
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1304
+	push	_1341
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-4],0
-	jle	_1305
-	push	_1306
+	jle	_1342
+	push	_1343
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
-	jmp	_406
-_1305:
-	push	_1307
+	jmp	_418
+_1342:
+	push	_1344
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-4],0
-	jge	_1308
-	push	_1309
+	jge	_1345
+	push	_1346
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	imul	ebx,-1
-	jmp	_406
-_1308:
-	push	_1310
+	jmp	_418
+_1345:
+	push	_1347
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	cmp	dword [ebp-4],0
-	jne	_1311
-	push	_1312
+	jne	_1348
+	push	_1349
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,0
-	jmp	_406
-_1311:
+	jmp	_418
+_1348:
 	mov	ebx,0
-	jmp	_406
-_406:
+	jmp	_418
+_418:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3871,26 +3883,26 @@ _bb_kd:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1318
+	push	_1355
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1315
+	push	_1352
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	_bbKeyDown
 	add	esp,4
 	cmp	eax,0
-	je	_1316
-	push	_1317
+	je	_1353
+	push	_1354
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,1
-	jmp	_409
-_1316:
+	jmp	_421
+_1353:
 	mov	ebx,0
-	jmp	_409
-_409:
+	jmp	_421
+_421:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3905,7 +3917,7 @@ __bb_game_world_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1322
+	push	_1359
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -3920,8 +3932,8 @@ __bb_game_world_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+24],0
 	mov	ebx,0
-	jmp	_412
-_412:
+	jmp	_424
+_424:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3933,21 +3945,21 @@ __bb_game_world_Delete:
 	mov	ebp,esp
 	push	ebx
 	mov	ebx,dword [ebp+8]
-_415:
+_427:
 	mov	eax,dword [ebx+20]
 	dec	dword [eax+4]
-	jnz	_1325
+	jnz	_1362
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1325:
+_1362:
 	mov	dword [ebx],_bb_yworld
 	push	ebx
 	call	__bb_yworld_Delete
 	add	esp,4
 	mov	eax,0
-	jmp	_1323
-_1323:
+	jmp	_1360
+_1360:
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
@@ -3960,18 +3972,18 @@ __bb_game_world_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1328
+	push	_1365
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1326
+	push	_1363
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_update
 	add	esp,4
 	mov	ebx,0
-	jmp	_418
-_418:
+	jmp	_430
+_430:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -3986,12 +3998,12 @@ __bb_game_world_twodupdate:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1329
+	push	_1366
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	mov	ebx,0
-	jmp	_421
-_421:
+	jmp	_433
+_433:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4001,7 +4013,7 @@ _421:
 __bb_game_world_init:
 	push	ebp
 	mov	ebp,esp
-	sub	esp,24
+	sub	esp,28
 	push	ebx
 	push	esi
 	mov	eax,dword [ebp+8]
@@ -4011,18 +4023,19 @@ __bb_game_world_init:
 	mov	dword [ebp-16],0
 	mov	dword [ebp-20],_bbNullObject
 	mov	dword [ebp-24],0
+	mov	dword [ebp-28],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_1368
+	push	_1410
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1330
+	push	_1367
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_init
 	add	esp,4
-	push	_1331
+	push	_1368
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -4030,7 +4043,7 @@ __bb_game_world_init:
 	call	_bbCreateSphere
 	add	esp,8
 	mov	dword [ebp-8],eax
-	push	_1333
+	push	_1370
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_64
@@ -4046,7 +4059,7 @@ __bb_game_world_init:
 	call	_bbMemFree
 	add	esp,4
 	mov	dword [ebp-12],ebx
-	push	_1337
+	push	_1374
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -4056,7 +4069,7 @@ __bb_game_world_init:
 	push	dword [ebp-8]
 	call	_bbScaleEntity
 	add	esp,20
-	push	_1338
+	push	_1375
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -4065,34 +4078,34 @@ __bb_game_world_init:
 	push	dword [ebp-8]
 	call	_bbEntityTexture
 	add	esp,16
-	push	_1339
+	push	_1376
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	1
 	push	dword [ebp-8]
 	call	_bbEntityOrder
 	add	esp,8
-	push	_1340
+	push	_1377
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-8]
 	call	_bbFlipMesh
 	add	esp,4
-	push	_1341
+	push	_1378
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	1048576000
 	push	dword [ebp-8]
 	call	_bbEntityAlpha
 	add	esp,8
-	push	_1342
+	push	_1379
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	8
 	push	dword [ebp-8]
 	call	_bbEntityFX
 	add	esp,8
-	push	_1343
+	push	_1380
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -4106,14 +4119,14 @@ __bb_game_world_init:
 	call	_bbHandleFromObject
 	add	esp,4
 	mov	dword [ebp-16],eax
-	push	_1345
+	push	_1382
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1347
+	jne	_1384
 	call	_brl_blitz_NullObjectError
-_1347:
+_1384:
 	push	_bb_yentity
 	push	dword [ebp-16]
 	call	_bbHandleToObject
@@ -4126,7 +4139,7 @@ _1347:
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,8
-	push	_1348
+	push	_1385
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	1041865114
@@ -4141,34 +4154,34 @@ _1347:
 	call	dword [_bb_enemy+108]
 	add	esp,20
 	mov	dword [ebp-20],eax
-	push	_1350
+	push	_1387
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1352
+	jne	_1389
 	call	_brl_blitz_NullObjectError
-_1352:
+_1389:
 	push	dword [ebp-20]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,8
-	push	_1353
+	push	_1390
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
 	call	_bbCreateCube
 	add	esp,4
 	mov	dword [ebp-24],eax
-	push	_1355
+	push	_1392
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1357
+	jne	_1394
 	call	_brl_blitz_NullObjectError
-_1357:
+_1394:
 	push	1045220557
 	push	dword [ebp-24]
 	push	1088421888
@@ -4180,33 +4193,62 @@ _1357:
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+20]
 	dec	dword [eax+4]
-	jnz	_1362
+	jnz	_1399
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1362:
+_1399:
 	mov	dword [esi+20],ebx
-	push	_1363
+	push	_1400
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1365
+	jne	_1402
 	call	_brl_blitz_NullObjectError
-_1365:
+_1402:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1367
+	jne	_1404
 	call	_brl_blitz_NullObjectError
-_1367:
+_1404:
 	push	dword [ebx+20]
 	push	esi
 	mov	eax,dword [esi]
 	call	dword [eax+64]
 	add	esp,8
+	push	_1405
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	push	0
+	push	0
+	push	1
+	push	8
+	call	_bbCreateCylinder
+	add	esp,12
+	push	eax
+	push	1088421888
+	push	-1065353216
+	push	1084227584
+	call	dword [_bb_spawner+108]
+	add	esp,20
+	mov	dword [ebp-28],eax
+	push	_1407
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1409
+	call	_brl_blitz_NullObjectError
+_1409:
+	push	dword [ebp-28]
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+64]
+	add	esp,8
 	mov	ebx,0
-	jmp	_424
-_424:
+	jmp	_436
+_436:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -4221,22 +4263,22 @@ __bb_game_world_Create:
 	push	ebx
 	mov	dword [ebp-4],_bbNullObject
 	push	ebp
-	push	_1376
+	push	_1420
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1373
+	push	_1417
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_game_world
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-4],eax
-	push	_1375
+	push	_1419
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
-	jmp	_426
-_426:
+	jmp	_438
+_438:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4251,7 +4293,7 @@ __bb_win_world_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1377
+	push	_1421
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -4260,8 +4302,8 @@ __bb_win_world_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax],_bb_win_world
 	mov	ebx,0
-	jmp	_429
-_429:
+	jmp	_441
+_441:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4272,14 +4314,14 @@ __bb_win_world_Delete:
 	push	ebp
 	mov	ebp,esp
 	mov	eax,dword [ebp+8]
-_432:
+_444:
 	mov	dword [eax],_bb_yworld
 	push	eax
 	call	__bb_yworld_Delete
 	add	esp,4
 	mov	eax,0
-	jmp	_1379
-_1379:
+	jmp	_1423
+_1423:
 	mov	esp,ebp
 	pop	ebp
 	ret
@@ -4291,18 +4333,18 @@ __bb_win_world_init:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1382
+	push	_1426
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1380
+	push	_1424
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_init
 	add	esp,4
 	mov	ebx,0
-	jmp	_435
-_435:
+	jmp	_447
+_447:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4317,10 +4359,10 @@ __bb_win_world_twodupdate:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1389
+	push	_1433
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1383
+	push	_1427
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_65
@@ -4337,7 +4379,7 @@ __bb_win_world_twodupdate:
 	push	ebx
 	call	_bbMemFree
 	add	esp,4
-	push	_1386
+	push	_1430
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_66
@@ -4355,8 +4397,8 @@ __bb_win_world_twodupdate:
 	call	_bbMemFree
 	add	esp,4
 	mov	ebx,0
-	jmp	_438
-_438:
+	jmp	_450
+_450:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4371,30 +4413,30 @@ __bb_win_world_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1394
+	push	_1438
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1390
+	push	_1434
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_update
 	add	esp,4
-	push	_1391
+	push	_1435
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1393
+	jne	_1437
 	call	_brl_blitz_NullObjectError
-_1393:
+_1437:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+88]
 	add	esp,4
 	mov	ebx,0
-	jmp	_441
-_441:
+	jmp	_453
+_453:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4409,40 +4451,40 @@ __bb_win_world_nextLevel:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1402
+	push	_1446
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1395
+	push	_1439
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	57
 	call	_bbKeyDown
 	add	esp,4
 	cmp	eax,0
-	je	_1396
-	push	_1397
+	je	_1440
+	push	_1441
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1399
+	jne	_1443
 	call	_brl_blitz_NullObjectError
-_1399:
+_1443:
 	mov	ebx,dword [ebx+16]
 	cmp	ebx,_bbNullObject
-	jne	_1401
+	jne	_1445
 	call	_brl_blitz_NullObjectError
-_1401:
+_1445:
 	push	0
 	push	_67
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,12
-_1396:
+_1440:
 	mov	ebx,0
-	jmp	_444
-_444:
+	jmp	_456
+_456:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4456,22 +4498,22 @@ __bb_win_world_Create:
 	push	ebx
 	mov	dword [ebp-4],_bbNullObject
 	push	ebp
-	push	_1406
+	push	_1450
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1403
+	push	_1447
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_win_world
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-4],eax
-	push	_1405
+	push	_1449
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
-	jmp	_446
-_446:
+	jmp	_458
+_458:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4486,7 +4528,7 @@ __bb_game_over_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1407
+	push	_1451
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -4495,8 +4537,8 @@ __bb_game_over_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax],_bb_game_over
 	mov	ebx,0
-	jmp	_449
-_449:
+	jmp	_461
+_461:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4507,14 +4549,14 @@ __bb_game_over_Delete:
 	push	ebp
 	mov	ebp,esp
 	mov	eax,dword [ebp+8]
-_452:
+_464:
 	mov	dword [eax],_bb_yworld
 	push	eax
 	call	__bb_yworld_Delete
 	add	esp,4
 	mov	eax,0
-	jmp	_1409
-_1409:
+	jmp	_1453
+_1453:
 	mov	esp,ebp
 	pop	ebp
 	ret
@@ -4526,18 +4568,18 @@ __bb_game_over_init:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1412
+	push	_1456
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1410
+	push	_1454
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_init
 	add	esp,4
 	mov	ebx,0
-	jmp	_455
-_455:
+	jmp	_467
+_467:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4552,10 +4594,10 @@ __bb_game_over_twodupdate:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1419
+	push	_1463
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1413
+	push	_1457
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_68
@@ -4572,7 +4614,7 @@ __bb_game_over_twodupdate:
 	push	ebx
 	call	_bbMemFree
 	add	esp,4
-	push	_1416
+	push	_1460
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_66
@@ -4590,8 +4632,8 @@ __bb_game_over_twodupdate:
 	call	_bbMemFree
 	add	esp,4
 	mov	ebx,0
-	jmp	_458
-_458:
+	jmp	_470
+_470:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4606,30 +4648,30 @@ __bb_game_over_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1424
+	push	_1468
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1420
+	push	_1464
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_update
 	add	esp,4
-	push	_1421
+	push	_1465
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1423
+	jne	_1467
 	call	_brl_blitz_NullObjectError
-_1423:
+_1467:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+88]
 	add	esp,4
 	mov	ebx,0
-	jmp	_461
-_461:
+	jmp	_473
+_473:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4644,40 +4686,40 @@ __bb_game_over_nextLevel:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1432
+	push	_1476
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1425
+	push	_1469
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	57
 	call	_bbKeyDown
 	add	esp,4
 	cmp	eax,0
-	je	_1426
-	push	_1427
+	je	_1470
+	push	_1471
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1429
+	jne	_1473
 	call	_brl_blitz_NullObjectError
-_1429:
+_1473:
 	mov	ebx,dword [ebx+16]
 	cmp	ebx,_bbNullObject
-	jne	_1431
+	jne	_1475
 	call	_brl_blitz_NullObjectError
-_1431:
+_1475:
 	push	0
 	push	_67
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,12
-_1426:
+_1470:
 	mov	ebx,0
-	jmp	_464
-_464:
+	jmp	_476
+_476:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4691,22 +4733,22 @@ __bb_game_over_Create:
 	push	ebx
 	mov	dword [ebp-4],_bbNullObject
 	push	ebp
-	push	_1436
+	push	_1480
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1433
+	push	_1477
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_game_over
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-4],eax
-	push	_1435
+	push	_1479
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
-	jmp	_466
-_466:
+	jmp	_478
+_478:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4721,7 +4763,7 @@ __bb_start_screen_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1438
+	push	_1482
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -4734,8 +4776,8 @@ __bb_start_screen_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+20],edx
 	mov	ebx,0
-	jmp	_469
-_469:
+	jmp	_481
+_481:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4747,21 +4789,21 @@ __bb_start_screen_Delete:
 	mov	ebp,esp
 	push	ebx
 	mov	ebx,dword [ebp+8]
-_472:
+_484:
 	mov	eax,dword [ebx+20]
 	dec	dword [eax+4]
-	jnz	_1442
+	jnz	_1486
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1442:
+_1486:
 	mov	dword [ebx],_bb_yworld
 	push	ebx
 	call	__bb_yworld_Delete
 	add	esp,4
 	mov	eax,0
-	jmp	_1440
-_1440:
+	jmp	_1484
+_1484:
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
@@ -4779,23 +4821,23 @@ __bb_start_screen_init:
 	mov	dword [ebp-16],0
 	mov	eax,ebp
 	push	eax
-	push	_1471
+	push	_1515
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1443
+	push	_1487
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_init
 	add	esp,4
-	push	_1445
+	push	_1489
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
 	call	_bbCreateCube
 	add	esp,4
 	mov	dword [ebp-8],eax
-	push	_1447
+	push	_1491
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -4805,7 +4847,7 @@ __bb_start_screen_init:
 	push	dword [ebp-8]
 	call	_bbScaleEntity
 	add	esp,20
-	push	_1448
+	push	_1492
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_69
@@ -4821,7 +4863,7 @@ __bb_start_screen_init:
 	call	_bbMemFree
 	add	esp,4
 	mov	dword [ebp-12],ebx
-	push	_1452
+	push	_1496
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -4830,14 +4872,14 @@ __bb_start_screen_init:
 	push	dword [ebp-8]
 	call	_bbEntityTexture
 	add	esp,16
-	push	_1453
+	push	_1497
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1455
+	jne	_1499
 	call	_brl_blitz_NullObjectError
-_1455:
+_1499:
 	push	0
 	push	dword [ebp-8]
 	push	1077936128
@@ -4849,31 +4891,31 @@ _1455:
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+20]
 	dec	dword [eax+4]
-	jnz	_1460
+	jnz	_1504
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1460:
+_1504:
 	mov	dword [esi+20],ebx
-	push	_1461
+	push	_1505
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1463
+	jne	_1507
 	call	_brl_blitz_NullObjectError
-_1463:
+_1507:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1465
+	jne	_1509
 	call	_brl_blitz_NullObjectError
-_1465:
+_1509:
 	push	dword [ebx+20]
 	push	esi
 	mov	eax,dword [esi]
 	call	dword [eax+64]
 	add	esp,8
-	push	_1466
+	push	_1510
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_70
@@ -4892,15 +4934,15 @@ _1465:
 	call	_bbMemFree
 	add	esp,4
 	mov	dword [ebp-16],ebx
-	push	_1470
+	push	_1514
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-16]
 	call	_bbSetFont
 	add	esp,4
 	mov	ebx,0
-	jmp	_475
-_475:
+	jmp	_487
+_487:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -4916,10 +4958,10 @@ __bb_start_screen_twodupdate:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1477
+	push	_1521
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1474
+	push	_1518
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_71
@@ -4937,8 +4979,8 @@ __bb_start_screen_twodupdate:
 	call	_bbMemFree
 	add	esp,4
 	mov	ebx,0
-	jmp	_478
-_478:
+	jmp	_490
+_490:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4953,30 +4995,30 @@ __bb_start_screen_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1482
+	push	_1526
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1478
+	push	_1522
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yworld_update
 	add	esp,4
-	push	_1479
+	push	_1523
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1481
+	jne	_1525
 	call	_brl_blitz_NullObjectError
-_1481:
+_1525:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+88]
 	add	esp,4
 	mov	ebx,0
-	jmp	_481
-_481:
+	jmp	_493
+_493:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -4991,58 +5033,58 @@ __bb_start_screen_start_click:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1496
+	push	_1540
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1483
+	push	_1527
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1485
+	jne	_1529
 	call	_brl_blitz_NullObjectError
-_1485:
+_1529:
 	mov	ebx,dword [ebx+20]
 	cmp	ebx,_bbNullObject
-	jne	_1487
+	jne	_1531
 	call	_brl_blitz_NullObjectError
-_1487:
+_1531:
 	push	1
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+92]
 	add	esp,8
 	cmp	eax,0
-	jne	_1488
+	jne	_1532
 	push	57
 	call	_bb_kd
 	add	esp,4
-_1488:
+_1532:
 	cmp	eax,0
-	je	_1490
-	push	_1491
+	je	_1534
+	push	_1535
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1493
+	jne	_1537
 	call	_brl_blitz_NullObjectError
-_1493:
+_1537:
 	mov	ebx,dword [ebx+16]
 	cmp	ebx,_bbNullObject
-	jne	_1495
+	jne	_1539
 	call	_brl_blitz_NullObjectError
-_1495:
+_1539:
 	push	1
 	push	_67
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,12
-_1490:
+_1534:
 	mov	ebx,0
-	jmp	_484
-_484:
+	jmp	_496
+_496:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -5056,22 +5098,22 @@ __bb_start_screen_Create:
 	push	ebx
 	mov	dword [ebp-4],_bbNullObject
 	push	ebp
-	push	_1500
+	push	_1544
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1497
+	push	_1541
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_start_screen
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-4],eax
-	push	_1499
+	push	_1543
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
-	jmp	_486
-_486:
+	jmp	_498
+_498:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -5086,7 +5128,7 @@ __bb_player_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1504
+	push	_1548
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -5107,40 +5149,50 @@ __bb_player_New:
 	fldz
 	fstp	dword [eax+56]
 	mov	eax,dword [ebp-4]
-	fldz
-	fstp	dword [eax+60]
+	mov	dword [eax+60],5
 	mov	eax,dword [ebp-4]
-	fldz
-	fstp	dword [eax+64]
+	mov	dword [eax+64],-3
 	mov	eax,dword [ebp-4]
 	fldz
 	fstp	dword [eax+68]
 	mov	eax,dword [ebp-4]
-	fld	dword [_2713]
+	fldz
 	fstp	dword [eax+72]
+	mov	eax,dword [ebp-4]
+	fldz
+	fstp	dword [eax+76]
+	mov	eax,dword [ebp-4]
+	fld	dword [_2918]
+	fstp	dword [eax+80]
 	mov	edx,_bbNullObject
 	inc	dword [edx+4]
 	mov	eax,dword [ebp-4]
-	mov	dword [eax+76],edx
+	mov	dword [eax+84],edx
 	mov	eax,dword [ebp-4]
-	mov	dword [eax+80],0
+	mov	dword [eax+88],0
 	mov	eax,dword [ebp-4]
-	mov	dword [eax+84],1
+	mov	dword [eax+92],1
 	mov	edx,_72
 	inc	dword [edx+4]
 	mov	eax,dword [ebp-4]
-	mov	dword [eax+88],edx
+	mov	dword [eax+96],edx
 	mov	eax,dword [ebp-4]
-	mov	dword [eax+92],1
+	mov	dword [eax+100],1
 	mov	eax,dword [ebp-4]
-	mov	dword [eax+96],0
+	mov	dword [eax+104],25
+	mov	edx,dword [ebp-4]
+	mov	eax,dword [ebp-4]
+	mov	eax,dword [eax+104]
+	mov	dword [edx+108],eax
+	mov	eax,dword [ebp-4]
+	mov	dword [eax+112],0
 	mov	edx,_bbNullObject
 	inc	dword [edx+4]
 	mov	eax,dword [ebp-4]
-	mov	dword [eax+100],edx
+	mov	dword [eax+116],edx
 	mov	ebx,0
-	jmp	_489
-_489:
+	jmp	_501
+_501:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -5152,35 +5204,35 @@ __bb_player_Delete:
 	mov	ebp,esp
 	push	ebx
 	mov	ebx,dword [ebp+8]
-_492:
-	mov	eax,dword [ebx+100]
+_504:
+	mov	eax,dword [ebx+116]
 	dec	dword [eax+4]
-	jnz	_1507
+	jnz	_1551
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1507:
-	mov	eax,dword [ebx+88]
+_1551:
+	mov	eax,dword [ebx+96]
 	dec	dword [eax+4]
-	jnz	_1509
+	jnz	_1553
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1509:
-	mov	eax,dword [ebx+76]
+_1553:
+	mov	eax,dword [ebx+84]
 	dec	dword [eax+4]
-	jnz	_1511
+	jnz	_1555
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1511:
+_1555:
 	mov	dword [ebx],_bb_yentity
 	push	ebx
 	call	__bb_yentity_Delete
 	add	esp,4
 	mov	eax,0
-	jmp	_1505
-_1505:
+	jmp	_1549
+_1549:
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
@@ -5196,28 +5248,28 @@ __bb_player_init:
 	mov	dword [ebp-8],0
 	mov	eax,ebp
 	push	eax
-	push	_1552
+	push	_1596
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1512
+	push	_1556
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yentity_init
 	add	esp,4
-	push	_1514
+	push	_1558
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1516
+	jne	_1560
 	call	_brl_blitz_NullObjectError
-_1516:
+_1560:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1519
+	jne	_1563
 	call	_brl_blitz_NullObjectError
-_1519:
+_1563:
 	push	_73
 	push	esi
 	mov	eax,dword [esi]
@@ -5225,9 +5277,9 @@ _1519:
 	add	esp,8
 	mov	esi,eax
 	cmp	esi,_bbNullObject
-	jne	_1521
+	jne	_1565
 	call	_brl_blitz_NullObjectError
-_1521:
+_1565:
 	push	_bb_yentity
 	push	esi
 	mov	eax,dword [esi]
@@ -5238,71 +5290,71 @@ _1521:
 	add	esp,8
 	mov	esi,eax
 	inc	dword [esi+4]
-	mov	eax,dword [ebx+100]
+	mov	eax,dword [ebx+116]
 	dec	dword [eax+4]
-	jnz	_1525
+	jnz	_1569
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1525:
-	mov	dword [ebx+100],esi
-	push	_1526
+_1569:
+	mov	dword [ebx+116],esi
+	push	_1570
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1528
+	jne	_1572
 	call	_brl_blitz_NullObjectError
-_1528:
+_1572:
 	push	0
 	call	_bbCreatePivot
 	add	esp,4
-	mov	dword [ebx+96],eax
-	push	_1530
+	mov	dword [ebx+112],eax
+	push	_1574
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1532
+	jne	_1576
 	call	_brl_blitz_NullObjectError
-_1532:
+_1576:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1534
+	jne	_1578
 	call	_brl_blitz_NullObjectError
-_1534:
+_1578:
 	push	1
-	push	dword [ebx+96]
+	push	dword [ebx+112]
 	push	dword [esi+24]
 	call	_bbEntityParent
 	add	esp,12
-	push	_1535
+	push	_1579
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1537
+	jne	_1581
 	call	_brl_blitz_NullObjectError
-_1537:
+_1581:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1540
+	jne	_1584
 	call	_brl_blitz_NullObjectError
-_1540:
-	push	dword [ebx+80]
+_1584:
+	push	dword [ebx+88]
 	call	dword [_bb_ytimer+52]
 	add	esp,4
 	mov	ebx,eax
 	inc	dword [ebx+4]
-	mov	eax,dword [esi+76]
+	mov	eax,dword [esi+84]
 	dec	dword [eax+4]
-	jnz	_1544
+	jnz	_1588
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1544:
-	mov	dword [esi+76],ebx
-	push	_1545
+_1588:
+	mov	dword [esi+84],ebx
+	push	_1589
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_74
@@ -5311,9 +5363,9 @@ _1544:
 	mov	esi,eax
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_1549
+	jne	_1593
 	call	_brl_blitz_NullObjectError
-_1549:
+_1593:
 	push	dword [ebx+12]
 	push	1
 	push	esi
@@ -5324,7 +5376,7 @@ _1549:
 	call	_bbMemFree
 	add	esp,4
 	mov	dword [ebp-8],ebx
-	push	_1551
+	push	_1595
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -5335,8 +5387,8 @@ _1549:
 	call	_bbPositionEntity
 	add	esp,20
 	mov	ebx,0
-	jmp	_495
-_495:
+	jmp	_507
+_507:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -5352,54 +5404,66 @@ __bb_player_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1563
+	push	_1610
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1553
+	push	_1597
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yentity_update
 	add	esp,4
-	push	_1554
+	push	_1598
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1556
+	jne	_1600
 	call	_brl_blitz_NullObjectError
-_1556:
+_1600:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+120]
 	add	esp,4
-	push	_1557
+	push	_1601
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1559
+	jne	_1603
 	call	_brl_blitz_NullObjectError
-_1559:
+_1603:
 	push	ebx
 	mov	eax,dword [ebx]
-	call	dword [eax+132]
+	call	dword [eax+136]
 	add	esp,4
-	push	_1560
+	push	_1604
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1562
+	jne	_1606
 	call	_brl_blitz_NullObjectError
-_1562:
+_1606:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+124]
 	add	esp,4
+	push	_1607
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1609
+	call	_brl_blitz_NullObjectError
+_1609:
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+132]
+	add	esp,4
 	mov	ebx,0
-	jmp	_498
-_498:
+	jmp	_510
+_510:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -5415,41 +5479,41 @@ __bb_player_fps_cam:
 	mov	dword [ebp-4],eax
 	mov	dword [ebp-8],0
 	push	ebp
-	push	_1579
+	push	_1626
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1564
+	push	_1611
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_1567
+	jne	_1614
 	call	_brl_blitz_NullObjectError
-_1567:
+_1614:
 	mov	eax,dword [ebx+12]
 	mov	dword [ebp-8],eax
-	push	_1568
+	push	_1615
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1570
+	jne	_1617
 	call	_brl_blitz_NullObjectError
-_1570:
+_1617:
 	push	0
 	push	0
 	call	_bbMouseXSpeed
 	neg	eax
 	mov	dword [ebp+-12],eax
 	fild	dword [ebp+-12]
-	fdiv	dword [_2734]
+	fdiv	dword [_2940]
 	sub	esp,4
 	fstp	dword [esp]
 	push	0
-	push	dword [ebx+96]
+	push	dword [ebx+112]
 	call	_bbTurnEntity
 	add	esp,20
-	push	_1571
+	push	_1618
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -5458,20 +5522,20 @@ _1570:
 	call	_bbMouseYSpeed
 	mov	dword [ebp+-12],eax
 	fild	dword [ebp+-12]
-	fdiv	dword [_2735]
+	fdiv	dword [_2941]
 	sub	esp,4
 	fstp	dword [esp]
 	push	dword [ebp-8]
 	call	_bbTurnEntity
 	add	esp,20
-	push	_1572
+	push	_1619
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
 	push	dword [ebp-8]
 	call	_bbEntityPitch
 	add	esp,8
-	fld	dword [_2736]
+	fld	dword [_2942]
 	fxch	st1
 	fucompp
 	fnstsw	ax
@@ -5479,8 +5543,8 @@ _1570:
 	setae	al
 	movzx	eax,al
 	cmp	eax,0
-	jne	_1573
-	push	_1574
+	jne	_1620
+	push	_1621
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -5500,15 +5564,15 @@ _1570:
 	push	dword [ebp-8]
 	call	_bbRotateEntity
 	add	esp,20
-_1573:
-	push	_1575
+_1620:
+	push	_1622
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
 	push	dword [ebp-8]
 	call	_bbEntityPitch
 	add	esp,8
-	fld	dword [_2737]
+	fld	dword [_2943]
 	fxch	st1
 	fucompp
 	fnstsw	ax
@@ -5516,8 +5580,8 @@ _1573:
 	setbe	al
 	movzx	eax,al
 	cmp	eax,0
-	jne	_1576
-	push	_1577
+	jne	_1623
+	push	_1624
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -5537,8 +5601,8 @@ _1573:
 	push	dword [ebp-8]
 	call	_bbRotateEntity
 	add	esp,20
-_1576:
-	push	_1578
+_1623:
+	push	_1625
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	call	_bbGraphicsHeight
@@ -5556,8 +5620,8 @@ _1576:
 	call	_bbMoveMouse
 	add	esp,8
 	mov	ebx,0
-	jmp	_501
-_501:
+	jmp	_513
+_513:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -5575,188 +5639,188 @@ __bb_player_change_gun:
 	mov	eax,dword [ebp+12]
 	mov	dword [ebp-8],eax
 	push	ebp
-	push	_1647
+	push	_1694
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1581
+	push	_1628
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1583
+	jne	_1630
 	call	_brl_blitz_NullObjectError
-_1583:
+_1630:
 	mov	ebx,dword [ebp-8]
 	inc	dword [ebx+4]
-	mov	eax,dword [esi+88]
+	mov	eax,dword [esi+96]
 	dec	dword [eax+4]
-	jnz	_1588
+	jnz	_1635
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1588:
-	mov	dword [esi+88],ebx
-	push	_1589
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1591
-	call	_brl_blitz_NullObjectError
-_1591:
-	push	_72
-	push	dword [ebx+88]
-	call	_bbStringCompare
-	add	esp,8
-	cmp	eax,0
-	jne	_1592
-	push	_1593
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1595
-	call	_brl_blitz_NullObjectError
-_1595:
-	mov	dword [ebx+80],0
-	push	_1597
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1599
-	call	_brl_blitz_NullObjectError
-_1599:
-	mov	dword [ebx+92],1
-_1592:
-	push	_1601
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1603
-	call	_brl_blitz_NullObjectError
-_1603:
-	push	_75
-	push	dword [ebx+88]
-	call	_bbStringCompare
-	add	esp,8
-	cmp	eax,0
-	jne	_1604
-	push	_1605
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1607
-	call	_brl_blitz_NullObjectError
-_1607:
-	mov	dword [ebx+80],1
-	push	_1609
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1611
-	call	_brl_blitz_NullObjectError
-_1611:
-	mov	dword [ebx+92],3
-_1604:
-	push	_1613
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1615
-	call	_brl_blitz_NullObjectError
-_1615:
-	push	_76
-	push	dword [ebx+88]
-	call	_bbStringCompare
-	add	esp,8
-	cmp	eax,0
-	jne	_1616
-	push	_1617
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1619
-	call	_brl_blitz_NullObjectError
-_1619:
-	mov	dword [ebx+80],2
-	push	_1621
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1623
-	call	_brl_blitz_NullObjectError
-_1623:
-	mov	dword [ebx+92],2
-_1616:
-	push	_1625
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1627
-	call	_brl_blitz_NullObjectError
-_1627:
-	push	_77
-	push	dword [ebx+88]
-	call	_bbStringCompare
-	add	esp,8
-	cmp	eax,0
-	jne	_1628
-	push	_1629
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1631
-	call	_brl_blitz_NullObjectError
-_1631:
-	mov	dword [ebx+80],4
-	push	_1633
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1635
-	call	_brl_blitz_NullObjectError
 _1635:
-	mov	dword [ebx+92],7
-_1628:
-	push	_1637
+	mov	dword [esi+96],ebx
+	push	_1636
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1639
+	jne	_1638
 	call	_brl_blitz_NullObjectError
-_1639:
-	mov	esi,dword [ebp-4]
-	cmp	esi,_bbNullObject
+_1638:
+	push	_72
+	push	dword [ebx+96]
+	call	_bbStringCompare
+	add	esp,8
+	cmp	eax,0
+	jne	_1639
+	push	_1640
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
 	jne	_1642
 	call	_brl_blitz_NullObjectError
 _1642:
-	push	dword [esi+80]
+	mov	dword [ebx+88],0
+	push	_1644
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1646
+	call	_brl_blitz_NullObjectError
+_1646:
+	mov	dword [ebx+100],1
+_1639:
+	push	_1648
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1650
+	call	_brl_blitz_NullObjectError
+_1650:
+	push	_75
+	push	dword [ebx+96]
+	call	_bbStringCompare
+	add	esp,8
+	cmp	eax,0
+	jne	_1651
+	push	_1652
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1654
+	call	_brl_blitz_NullObjectError
+_1654:
+	mov	dword [ebx+88],1
+	push	_1656
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1658
+	call	_brl_blitz_NullObjectError
+_1658:
+	mov	dword [ebx+100],3
+_1651:
+	push	_1660
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1662
+	call	_brl_blitz_NullObjectError
+_1662:
+	push	_76
+	push	dword [ebx+96]
+	call	_bbStringCompare
+	add	esp,8
+	cmp	eax,0
+	jne	_1663
+	push	_1664
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1666
+	call	_brl_blitz_NullObjectError
+_1666:
+	mov	dword [ebx+88],2
+	push	_1668
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1670
+	call	_brl_blitz_NullObjectError
+_1670:
+	mov	dword [ebx+100],2
+_1663:
+	push	_1672
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1674
+	call	_brl_blitz_NullObjectError
+_1674:
+	push	_77
+	push	dword [ebx+96]
+	call	_bbStringCompare
+	add	esp,8
+	cmp	eax,0
+	jne	_1675
+	push	_1676
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1678
+	call	_brl_blitz_NullObjectError
+_1678:
+	mov	dword [ebx+88],4
+	push	_1680
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1682
+	call	_brl_blitz_NullObjectError
+_1682:
+	mov	dword [ebx+100],7
+_1675:
+	push	_1684
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1686
+	call	_brl_blitz_NullObjectError
+_1686:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1689
+	call	_brl_blitz_NullObjectError
+_1689:
+	push	dword [esi+88]
 	call	dword [_bb_ytimer+52]
 	add	esp,4
 	inc	dword [eax+4]
 	mov	esi,eax
-	mov	eax,dword [ebx+76]
+	mov	eax,dword [ebx+84]
 	dec	dword [eax+4]
-	jnz	_1646
+	jnz	_1693
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1646:
-	mov	dword [ebx+76],esi
+_1693:
+	mov	dword [ebx+84],esi
 	mov	ebx,0
-	jmp	_505
-_505:
+	jmp	_517
+_517:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -5767,7 +5831,7 @@ _505:
 __bb_player_move:
 	push	ebp
 	mov	ebp,esp
-	sub	esp,24
+	sub	esp,28
 	push	ebx
 	push	esi
 	push	edi
@@ -5777,213 +5841,62 @@ __bb_player_move:
 	fstp	dword [ebp-8]
 	mov	eax,ebp
 	push	eax
-	push	_1821
+	push	_1892
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1649
+	push	_1696
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	30
 	call	_bb_kd
 	add	esp,4
 	cmp	eax,0
-	je	_1650
-	push	_1651
+	je	_1697
+	push	_1698
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1653
+	jne	_1700
 	call	_brl_blitz_NullObjectError
-_1653:
+_1700:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1656
+	jne	_1703
 	call	_brl_blitz_NullObjectError
-_1656:
+_1703:
 	fld	dword [esi+44]
-	fadd	dword [_2765]
+	fadd	dword [_2971]
 	fstp	dword [ebx+44]
-_1650:
-	push	_1657
+_1697:
+	push	_1704
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	44
 	call	_bb_kd
 	add	esp,4
 	cmp	eax,0
-	je	_1658
-	push	_1659
+	je	_1705
+	push	_1706
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1661
+	jne	_1708
 	call	_brl_blitz_NullObjectError
-_1661:
+_1708:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1664
+	jne	_1711
 	call	_brl_blitz_NullObjectError
-_1664:
+_1711:
 	fld	dword [esi+44]
-	fsub	dword [_2766]
+	fsub	dword [_2972]
 	fstp	dword [ebx+44]
-_1658:
-	push	_1665
+_1705:
+	push	_1712
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1668
-	call	_brl_blitz_NullObjectError
-_1668:
-	fld	dword [ebx+72]
-	fdiv	dword [_2767]
-	fstp	dword [ebp-8]
-	push	_1669
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	push	203
-	call	_bb_kd
-	add	esp,4
-	cmp	eax,0
-	je	_1670
-	push	_1671
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1673
-	call	_brl_blitz_NullObjectError
-_1673:
-	mov	dword [ebp-12],ebx
-	mov	edi,dword [ebp-4]
-	cmp	edi,_bbNullObject
-	jne	_1676
-	call	_brl_blitz_NullObjectError
-_1676:
-	mov	esi,dword [ebp-4]
-	cmp	esi,_bbNullObject
-	jne	_1678
-	call	_brl_blitz_NullObjectError
-_1678:
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1680
-	call	_brl_blitz_NullObjectError
-_1680:
-	fld	dword [edi+64]
-	fld	dword [esi+72]
-	fsub	dword [ebx+64]
-	fmul	dword [ebp-8]
-	faddp	st1,st0
-	mov	eax,dword [ebp-12]
-	fstp	dword [eax+64]
-_1670:
-	push	_1681
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	push	205
-	call	_bb_kd
-	add	esp,4
-	cmp	eax,0
-	je	_1682
-	push	_1683
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1685
-	call	_brl_blitz_NullObjectError
-_1685:
-	mov	dword [ebp-16],ebx
-	mov	edi,dword [ebp-4]
-	cmp	edi,_bbNullObject
-	jne	_1688
-	call	_brl_blitz_NullObjectError
-_1688:
-	mov	esi,dword [ebp-4]
-	cmp	esi,_bbNullObject
-	jne	_1690
-	call	_brl_blitz_NullObjectError
-_1690:
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1692
-	call	_brl_blitz_NullObjectError
-_1692:
-	fld	dword [edi+64]
-	fld	dword [esi+72]
-	fchs
-	fsub	dword [ebx+64]
-	fmul	dword [ebp-8]
-	faddp	st1,st0
-	mov	eax,dword [ebp-16]
-	fstp	dword [eax+64]
-_1682:
-	push	_1693
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	push	208
-	call	_bb_kd
-	add	esp,4
-	cmp	eax,0
-	je	_1694
-	push	_1695
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1697
-	call	_brl_blitz_NullObjectError
-_1697:
-	mov	dword [ebp-20],ebx
-	mov	edi,dword [ebp-4]
-	cmp	edi,_bbNullObject
-	jne	_1700
-	call	_brl_blitz_NullObjectError
-_1700:
-	mov	esi,dword [ebp-4]
-	cmp	esi,_bbNullObject
-	jne	_1702
-	call	_brl_blitz_NullObjectError
-_1702:
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1704
-	call	_brl_blitz_NullObjectError
-_1704:
-	fld	dword [edi+60]
-	fld	dword [esi+72]
-	fsub	dword [ebx+60]
-	fmul	dword [ebp-8]
-	faddp	st1,st0
-	mov	eax,dword [ebp-20]
-	fstp	dword [eax+60]
-_1694:
-	push	_1705
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	push	200
-	call	_bb_kd
-	add	esp,4
-	cmp	eax,0
-	je	_1706
-	push	_1707
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1709
-	call	_brl_blitz_NullObjectError
-_1709:
-	mov	dword [ebp-24],ebx
-	mov	edi,dword [ebp-4]
-	cmp	edi,_bbNullObject
-	jne	_1712
-	call	_brl_blitz_NullObjectError
-_1712:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
 	jne	_1714
@@ -5994,47 +5907,53 @@ _1714:
 	jne	_1716
 	call	_brl_blitz_NullObjectError
 _1716:
-	fld	dword [edi+60]
-	fld	dword [esi+72]
-	fchs
-	fsub	dword [ebx+60]
-	fmul	dword [ebp-8]
-	faddp	st1,st0
-	mov	eax,dword [ebp-24]
-	fstp	dword [eax+60]
-_1706:
-	push	_1717
+	fld	dword [esi+44]
+	mov	eax,dword [ebx+60]
+	mov	dword [ebp+-28],eax
+	fild	dword [ebp+-28]
+	fxch	st1
+	fucompp
+	fnstsw	ax
+	sahf
+	setbe	al
+	movzx	eax,al
+	cmp	eax,0
+	jne	_1717
+	push	_1718
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1719
+	jne	_1720
 	call	_brl_blitz_NullObjectError
-_1719:
-	mov	edi,ebx
+_1720:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1722
+	jne	_1723
 	call	_brl_blitz_NullObjectError
-_1722:
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1724
-	call	_brl_blitz_NullObjectError
-_1724:
-	fld	dword [esi+52]
-	fadd	dword [ebx+64]
-	fstp	dword [edi+52]
-	push	_1725
+_1723:
+	mov	eax,dword [esi+60]
+	mov	dword [ebp+-28],eax
+	fild	dword [ebp+-28]
+	fstp	dword [ebx+44]
+_1717:
+	push	_1724
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1726
+	call	_brl_blitz_NullObjectError
+_1726:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1727
+	jne	_1728
 	call	_brl_blitz_NullObjectError
-_1727:
-	fld	dword [ebx+52]
-	fld	dword [_2768]
+_1728:
+	fld	dword [esi+44]
+	mov	eax,dword [ebx+64]
+	mov	dword [ebp+-28],eax
+	fild	dword [ebp+-28]
 	fxch	st1
 	fucompp
 	fnstsw	ax
@@ -6042,126 +5961,265 @@ _1727:
 	setae	al
 	movzx	eax,al
 	cmp	eax,0
-	jne	_1728
-	push	_1729
+	jne	_1729
+	push	_1730
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1731
+	jne	_1732
 	call	_brl_blitz_NullObjectError
-_1731:
+_1732:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1734
+	jne	_1735
 	call	_brl_blitz_NullObjectError
-_1734:
-	fld	dword [esi+52]
-	fadd	dword [_2769]
-	fstp	dword [ebx+52]
-_1728:
-	push	_1735
+_1735:
+	mov	eax,dword [esi+64]
+	mov	dword [ebp+-28],eax
+	fild	dword [ebp+-28]
+	fstp	dword [ebx+44]
+_1729:
+	push	_1736
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1737
+	jne	_1739
 	call	_brl_blitz_NullObjectError
-_1737:
-	fld	dword [ebx+52]
-	fld	dword [_2770]
-	fxch	st1
-	fucompp
-	fnstsw	ax
-	sahf
-	setb	al
-	movzx	eax,al
+_1739:
+	fld	dword [ebx+80]
+	fdiv	dword [_2973]
+	fstp	dword [ebp-8]
+	push	_1740
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	push	203
+	call	_bb_kd
+	add	esp,4
 	cmp	eax,0
-	jne	_1738
-	push	_1739
+	je	_1741
+	push	_1742
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1741
-	call	_brl_blitz_NullObjectError
-_1741:
-	mov	esi,dword [ebp-4]
-	cmp	esi,_bbNullObject
 	jne	_1744
 	call	_brl_blitz_NullObjectError
 _1744:
-	fld	dword [esi+52]
-	fsub	dword [_2771]
-	fstp	dword [ebx+52]
-_1738:
-	push	_1745
-	call	dword [_bbOnDebugEnterStm]
-	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
+	mov	dword [ebp-12],ebx
+	mov	edi,dword [ebp-4]
+	cmp	edi,_bbNullObject
 	jne	_1747
 	call	_brl_blitz_NullObjectError
 _1747:
-	mov	edi,ebx
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1750
+	jne	_1749
 	call	_brl_blitz_NullObjectError
-_1750:
+_1749:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1752
+	jne	_1751
 	call	_brl_blitz_NullObjectError
-_1752:
-	fld	dword [esi+48]
-	fadd	dword [ebx+60]
-	fstp	dword [edi+48]
-	push	_1753
+_1751:
+	fld	dword [edi+72]
+	fld	dword [esi+80]
+	fsub	dword [ebx+72]
+	fmul	dword [ebp-8]
+	faddp	st1,st0
+	mov	eax,dword [ebp-12]
+	fstp	dword [eax+72]
+_1741:
+	push	_1752
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
-	mov	ebx,dword [ebp-4]
-	cmp	ebx,_bbNullObject
-	jne	_1755
-	call	_brl_blitz_NullObjectError
-_1755:
-	fld	dword [ebx+48]
-	fld	dword [_2772]
-	fxch	st1
-	fucompp
-	fnstsw	ax
-	sahf
-	setae	al
-	movzx	eax,al
+	push	205
+	call	_bb_kd
+	add	esp,4
 	cmp	eax,0
-	jne	_1756
-	push	_1757
+	je	_1753
+	push	_1754
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
+	jne	_1756
+	call	_brl_blitz_NullObjectError
+_1756:
+	mov	dword [ebp-16],ebx
+	mov	edi,dword [ebp-4]
+	cmp	edi,_bbNullObject
 	jne	_1759
 	call	_brl_blitz_NullObjectError
 _1759:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1762
+	jne	_1761
 	call	_brl_blitz_NullObjectError
-_1762:
-	fld	dword [esi+48]
-	fadd	dword [_2773]
-	fstp	dword [ebx+48]
-_1756:
-	push	_1763
+_1761:
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1763
+	call	_brl_blitz_NullObjectError
+_1763:
+	fld	dword [edi+72]
+	fld	dword [esi+80]
+	fchs
+	fsub	dword [ebx+72]
+	fmul	dword [ebp-8]
+	faddp	st1,st0
+	mov	eax,dword [ebp-16]
+	fstp	dword [eax+72]
+_1753:
+	push	_1764
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	push	208
+	call	_bb_kd
+	add	esp,4
+	cmp	eax,0
+	je	_1765
+	push	_1766
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1765
+	jne	_1768
 	call	_brl_blitz_NullObjectError
+_1768:
+	mov	dword [ebp-20],ebx
+	mov	edi,dword [ebp-4]
+	cmp	edi,_bbNullObject
+	jne	_1771
+	call	_brl_blitz_NullObjectError
+_1771:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1773
+	call	_brl_blitz_NullObjectError
+_1773:
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1775
+	call	_brl_blitz_NullObjectError
+_1775:
+	fld	dword [edi+68]
+	fld	dword [esi+80]
+	fsub	dword [ebx+68]
+	fmul	dword [ebp-8]
+	faddp	st1,st0
+	mov	eax,dword [ebp-20]
+	fstp	dword [eax+68]
 _1765:
-	fld	dword [ebx+48]
-	fld	dword [_2774]
+	push	_1776
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	push	200
+	call	_bb_kd
+	add	esp,4
+	cmp	eax,0
+	je	_1777
+	push	_1778
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1780
+	call	_brl_blitz_NullObjectError
+_1780:
+	mov	dword [ebp-24],ebx
+	mov	edi,dword [ebp-4]
+	cmp	edi,_bbNullObject
+	jne	_1783
+	call	_brl_blitz_NullObjectError
+_1783:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1785
+	call	_brl_blitz_NullObjectError
+_1785:
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1787
+	call	_brl_blitz_NullObjectError
+_1787:
+	fld	dword [edi+68]
+	fld	dword [esi+80]
+	fchs
+	fsub	dword [ebx+68]
+	fmul	dword [ebp-8]
+	faddp	st1,st0
+	mov	eax,dword [ebp-24]
+	fstp	dword [eax+68]
+_1777:
+	push	_1788
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1790
+	call	_brl_blitz_NullObjectError
+_1790:
+	mov	edi,ebx
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1793
+	call	_brl_blitz_NullObjectError
+_1793:
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1795
+	call	_brl_blitz_NullObjectError
+_1795:
+	fld	dword [esi+52]
+	fadd	dword [ebx+72]
+	fstp	dword [edi+52]
+	push	_1796
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1798
+	call	_brl_blitz_NullObjectError
+_1798:
+	fld	dword [ebx+52]
+	fld	dword [_2974]
+	fxch	st1
+	fucompp
+	fnstsw	ax
+	sahf
+	setae	al
+	movzx	eax,al
+	cmp	eax,0
+	jne	_1799
+	push	_1800
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1802
+	call	_brl_blitz_NullObjectError
+_1802:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1805
+	call	_brl_blitz_NullObjectError
+_1805:
+	fld	dword [esi+52]
+	fadd	dword [_2975]
+	fstp	dword [ebx+52]
+_1799:
+	push	_1806
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1808
+	call	_brl_blitz_NullObjectError
+_1808:
+	fld	dword [ebx+52]
+	fld	dword [_2976]
 	fxch	st1
 	fucompp
 	fnstsw	ax
@@ -6169,130 +6227,222 @@ _1765:
 	setb	al
 	movzx	eax,al
 	cmp	eax,0
-	jne	_1766
-	push	_1767
+	jne	_1809
+	push	_1810
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1769
+	jne	_1812
 	call	_brl_blitz_NullObjectError
-_1769:
+_1812:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1772
+	jne	_1815
 	call	_brl_blitz_NullObjectError
-_1772:
+_1815:
+	fld	dword [esi+52]
+	fsub	dword [_2977]
+	fstp	dword [ebx+52]
+_1809:
+	push	_1816
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1818
+	call	_brl_blitz_NullObjectError
+_1818:
+	mov	edi,ebx
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1821
+	call	_brl_blitz_NullObjectError
+_1821:
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1823
+	call	_brl_blitz_NullObjectError
+_1823:
 	fld	dword [esi+48]
-	fsub	dword [_2775]
+	fadd	dword [ebx+68]
+	fstp	dword [edi+48]
+	push	_1824
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1826
+	call	_brl_blitz_NullObjectError
+_1826:
+	fld	dword [ebx+48]
+	fld	dword [_2978]
+	fxch	st1
+	fucompp
+	fnstsw	ax
+	sahf
+	setae	al
+	movzx	eax,al
+	cmp	eax,0
+	jne	_1827
+	push	_1828
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1830
+	call	_brl_blitz_NullObjectError
+_1830:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1833
+	call	_brl_blitz_NullObjectError
+_1833:
+	fld	dword [esi+48]
+	fadd	dword [_2979]
 	fstp	dword [ebx+48]
-_1766:
-	push	_1773
+_1827:
+	push	_1834
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1836
+	call	_brl_blitz_NullObjectError
+_1836:
+	fld	dword [ebx+48]
+	fld	dword [_2980]
+	fxch	st1
+	fucompp
+	fnstsw	ax
+	sahf
+	setb	al
+	movzx	eax,al
+	cmp	eax,0
+	jne	_1837
+	push	_1838
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_1840
+	call	_brl_blitz_NullObjectError
+_1840:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_1843
+	call	_brl_blitz_NullObjectError
+_1843:
+	fld	dword [esi+48]
+	fsub	dword [_2981]
+	fstp	dword [ebx+48]
+_1837:
+	push	_1844
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	2
 	call	_bb_kd
 	add	esp,4
 	cmp	eax,0
-	je	_1774
-	push	_1775
+	je	_1845
+	push	_1846
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1777
+	jne	_1848
 	call	_brl_blitz_NullObjectError
-_1777:
+_1848:
 	push	_72
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+116]
 	add	esp,8
-_1774:
-	push	_1778
+_1845:
+	push	_1849
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	3
 	call	_bb_kd
 	add	esp,4
 	cmp	eax,0
-	je	_1779
-	push	_1780
+	je	_1850
+	push	_1851
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1782
+	jne	_1853
 	call	_brl_blitz_NullObjectError
-_1782:
+_1853:
 	push	_75
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+116]
 	add	esp,8
-_1779:
-	push	_1783
+_1850:
+	push	_1854
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	4
 	call	_bb_kd
 	add	esp,4
 	cmp	eax,0
-	je	_1784
-	push	_1785
+	je	_1855
+	push	_1856
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1787
+	jne	_1858
 	call	_brl_blitz_NullObjectError
-_1787:
+_1858:
 	push	_76
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+116]
 	add	esp,8
-_1784:
-	push	_1788
+_1855:
+	push	_1859
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	5
 	call	_bb_kd
 	add	esp,4
 	cmp	eax,0
-	je	_1789
-	push	_1790
+	je	_1860
+	push	_1861
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1792
+	jne	_1863
 	call	_brl_blitz_NullObjectError
-_1792:
+_1863:
 	push	_77
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+116]
 	add	esp,8
-_1789:
-	push	_1793
+_1860:
+	push	_1864
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_1795
+	jne	_1866
 	call	_brl_blitz_NullObjectError
-_1795:
+_1866:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1797
+	jne	_1868
 	call	_brl_blitz_NullObjectError
-_1797:
+_1868:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1799
+	jne	_1870
 	call	_brl_blitz_NullObjectError
-_1799:
+_1870:
 	push	0
 	push	0
 	push	dword [ebx+52]
@@ -6300,19 +6450,19 @@ _1799:
 	push	dword [edi+24]
 	call	_bbTurnEntity
 	add	esp,20
-	push	_1800
+	push	_1871
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1802
+	jne	_1873
 	call	_brl_blitz_NullObjectError
-_1802:
+_1873:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1804
+	jne	_1875
 	call	_brl_blitz_NullObjectError
-_1804:
+_1875:
 	push	dword [ebx+44]
 	push	0
 	push	0
@@ -6320,49 +6470,49 @@ _1804:
 	mov	eax,dword [esi]
 	call	dword [eax+60]
 	add	esp,16
-	push	_1805
+	push	_1876
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1807
+	jne	_1878
 	call	_brl_blitz_NullObjectError
-_1807:
+_1878:
 	fldz
-	fstp	dword [ebx+60]
-	push	_1809
+	fstp	dword [ebx+68]
+	push	_1880
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1811
+	jne	_1882
 	call	_brl_blitz_NullObjectError
-_1811:
+_1882:
 	fldz
 	fstp	dword [ebx+48]
-	push	_1813
+	push	_1884
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1815
+	jne	_1886
 	call	_brl_blitz_NullObjectError
-_1815:
+_1886:
 	fldz
-	fstp	dword [ebx+64]
-	push	_1817
+	fstp	dword [ebx+72]
+	push	_1888
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1819
+	jne	_1890
 	call	_brl_blitz_NullObjectError
-_1819:
+_1890:
 	fldz
 	fstp	dword [ebx+52]
 	mov	ebx,0
-	jmp	_508
-_508:
+	jmp	_520
+_520:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -6383,72 +6533,72 @@ __bb_player_shoot:
 	mov	dword [ebp-8],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_1905
+	push	_1976
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1823
+	push	_1894
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	57
 	call	_bb_kd
 	add	esp,4
 	cmp	eax,0
-	je	_1828
+	je	_1899
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1825
+	jne	_1896
 	call	_brl_blitz_NullObjectError
-_1825:
-	mov	ebx,dword [ebx+76]
+_1896:
+	mov	ebx,dword [ebx+84]
 	cmp	ebx,_bbNullObject
-	jne	_1827
+	jne	_1898
 	call	_brl_blitz_NullObjectError
-_1827:
+_1898:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
 	add	esp,4
-_1828:
+_1899:
 	cmp	eax,0
-	je	_1830
-	push	_1831
+	je	_1901
+	push	_1902
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1833
+	jne	_1904
 	call	_brl_blitz_NullObjectError
-_1833:
+_1904:
 	push	_76
-	push	dword [ebx+88]
+	push	dword [ebx+96]
 	call	_bbStringCompare
 	add	esp,8
 	cmp	eax,0
-	jne	_1834
-	push	_1835
+	jne	_1905
+	push	_1906
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_1837
+	jne	_1908
 	call	_brl_blitz_NullObjectError
-_1837:
+_1908:
 	mov	eax,dword [ebp-4]
 	mov	dword [ebp-12],eax
 	cmp	dword [ebp-12],_bbNullObject
-	jne	_1839
+	jne	_1910
 	call	_brl_blitz_NullObjectError
-_1839:
+_1910:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1841
+	jne	_1912
 	call	_brl_blitz_NullObjectError
-_1841:
+_1912:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1843
+	jne	_1914
 	call	_brl_blitz_NullObjectError
-_1843:
+_1914:
 	push	1
 	fld	dword [ebx+16]
 	sub	esp,8
@@ -6457,7 +6607,7 @@ _1843:
 	add	esp,8
 	push	eax
 	fld	dword [esi+12]
-	fadd	dword [_2844]
+	fadd	dword [_3060]
 	sub	esp,8
 	fstp	qword [esp]
 	call	_bbFloatToInt
@@ -6474,30 +6624,30 @@ _1843:
 	mov	eax,dword [edi]
 	call	dword [eax+128]
 	add	esp,20
-	push	_1844
+	push	_1915
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_1846
+	jne	_1917
 	call	_brl_blitz_NullObjectError
-_1846:
+_1917:
 	mov	eax,dword [ebp-4]
 	mov	dword [ebp-16],eax
 	cmp	dword [ebp-16],_bbNullObject
-	jne	_1848
+	jne	_1919
 	call	_brl_blitz_NullObjectError
-_1848:
+_1919:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1850
+	jne	_1921
 	call	_brl_blitz_NullObjectError
-_1850:
+_1921:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1852
+	jne	_1923
 	call	_brl_blitz_NullObjectError
-_1852:
+_1923:
 	push	1
 	fld	dword [ebx+16]
 	sub	esp,8
@@ -6506,7 +6656,7 @@ _1852:
 	add	esp,8
 	push	eax
 	fld	dword [esi+12]
-	fadd	dword [_2845]
+	fadd	dword [_3061]
 	sub	esp,8
 	fstp	qword [esp]
 	call	_bbFloatToInt
@@ -6514,7 +6664,7 @@ _1852:
 	push	eax
 	mov	eax,dword [ebp-16]
 	fld	dword [eax+8]
-	fsub	dword [_2846]
+	fsub	dword [_3062]
 	sub	esp,8
 	fstp	qword [esp]
 	call	_bbFloatToInt
@@ -6524,30 +6674,30 @@ _1852:
 	mov	eax,dword [edi]
 	call	dword [eax+128]
 	add	esp,20
-	push	_1853
+	push	_1924
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_1855
+	jne	_1926
 	call	_brl_blitz_NullObjectError
-_1855:
+_1926:
 	mov	eax,dword [ebp-4]
 	mov	dword [ebp-20],eax
 	cmp	dword [ebp-20],_bbNullObject
-	jne	_1857
+	jne	_1928
 	call	_brl_blitz_NullObjectError
-_1857:
+_1928:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1859
+	jne	_1930
 	call	_brl_blitz_NullObjectError
-_1859:
+_1930:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1861
+	jne	_1932
 	call	_brl_blitz_NullObjectError
-_1861:
+_1932:
 	push	1
 	fld	dword [ebx+16]
 	sub	esp,8
@@ -6556,7 +6706,7 @@ _1861:
 	add	esp,8
 	push	eax
 	fld	dword [esi+12]
-	fadd	dword [_2847]
+	fadd	dword [_3063]
 	sub	esp,8
 	fstp	qword [esp]
 	call	_bbFloatToInt
@@ -6564,7 +6714,7 @@ _1861:
 	push	eax
 	mov	eax,dword [ebp-20]
 	fld	dword [eax+8]
-	fadd	dword [_2848]
+	fadd	dword [_3064]
 	sub	esp,8
 	fstp	qword [esp]
 	call	_bbFloatToInt
@@ -6574,50 +6724,50 @@ _1861:
 	mov	eax,dword [edi]
 	call	dword [eax+128]
 	add	esp,20
-	push	_1862
+	push	_1933
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,0
-	jmp	_511
-_1834:
-	push	_1863
+	jmp	_523
+_1905:
+	push	_1934
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1865
+	jne	_1936
 	call	_brl_blitz_NullObjectError
-_1865:
+_1936:
 	push	_77
-	push	dword [ebx+88]
+	push	dword [ebx+96]
 	call	_bbStringCompare
 	add	esp,8
 	cmp	eax,0
-	jne	_1866
-	push	_1867
+	jne	_1937
+	push	_1938
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_1870
+	jne	_1941
 	call	_brl_blitz_NullObjectError
-_1870:
+_1941:
 	mov	eax,dword [ebp-4]
 	mov	dword [ebp-24],eax
 	cmp	dword [ebp-24],_bbNullObject
-	jne	_1872
+	jne	_1943
 	call	_brl_blitz_NullObjectError
-_1872:
+_1943:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1874
+	jne	_1945
 	call	_brl_blitz_NullObjectError
-_1874:
+_1945:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1876
+	jne	_1947
 	call	_brl_blitz_NullObjectError
-_1876:
+_1947:
 	push	1
 	fld	dword [ebx+16]
 	sub	esp,8
@@ -6626,7 +6776,7 @@ _1876:
 	add	esp,8
 	push	eax
 	fld	dword [esi+12]
-	fadd	dword [_2849]
+	fadd	dword [_3065]
 	sub	esp,8
 	fstp	qword [esp]
 	call	_bbFloatToInt
@@ -6644,77 +6794,77 @@ _1876:
 	call	dword [eax+128]
 	add	esp,20
 	mov	dword [ebp-8],eax
-	push	_1877
+	push	_1948
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_1879
+	jne	_1950
 	call	_brl_blitz_NullObjectError
-_1879:
+_1950:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1882
+	jne	_1953
 	call	_brl_blitz_NullObjectError
-_1882:
-	mov	ebx,dword [ebx+100]
+_1953:
+	mov	ebx,dword [ebx+116]
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+64]
 	dec	dword [eax+4]
-	jnz	_1886
+	jnz	_1957
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1886:
+_1957:
 	mov	dword [esi+64],ebx
-	push	_1887
+	push	_1958
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_1889
+	jne	_1960
 	call	_brl_blitz_NullObjectError
-_1889:
+_1960:
 	mov	ebx,_77
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+60]
 	dec	dword [eax+4]
-	jnz	_1894
+	jnz	_1965
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1894:
+_1965:
 	mov	dword [esi+60],ebx
-	push	_1895
+	push	_1966
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,0
-	jmp	_511
-_1866:
-	push	_1896
+	jmp	_523
+_1937:
+	push	_1967
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_1898
+	jne	_1969
 	call	_brl_blitz_NullObjectError
-_1898:
+_1969:
 	mov	eax,dword [ebp-4]
 	mov	dword [ebp-28],eax
 	cmp	dword [ebp-28],_bbNullObject
-	jne	_1900
+	jne	_1971
 	call	_brl_blitz_NullObjectError
-_1900:
+_1971:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1902
+	jne	_1973
 	call	_brl_blitz_NullObjectError
-_1902:
+_1973:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1904
+	jne	_1975
 	call	_brl_blitz_NullObjectError
-_1904:
+_1975:
 	push	1
 	fld	dword [ebx+16]
 	sub	esp,8
@@ -6723,7 +6873,7 @@ _1904:
 	add	esp,8
 	push	eax
 	fld	dword [esi+12]
-	fadd	dword [_2850]
+	fadd	dword [_3066]
 	sub	esp,8
 	fstp	qword [esp]
 	call	_bbFloatToInt
@@ -6740,10 +6890,10 @@ _1904:
 	mov	eax,dword [edi]
 	call	dword [eax+128]
 	add	esp,20
-_1830:
+_1901:
 	mov	ebx,0
-	jmp	_511
-_511:
+	jmp	_523
+_523:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -6772,10 +6922,10 @@ __bb_player_make_bullet:
 	mov	dword [ebp-24],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_1934
+	push	_2005
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1908
+	push	_1979
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,dword [ebp-20]
@@ -6795,32 +6945,32 @@ __bb_player_make_bullet:
 	call	dword [_bb_bullet+108]
 	add	esp,20
 	mov	dword [ebp-24],eax
-	push	_1910
+	push	_1981
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1912
+	jne	_1983
 	call	_brl_blitz_NullObjectError
-_1912:
+_1983:
 	mov	ebx,dword [ebx+32]
 	cmp	ebx,_bbNullObject
-	jne	_1914
+	jne	_1985
 	call	_brl_blitz_NullObjectError
-_1914:
+_1985:
 	push	dword [ebp-24]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,8
-	push	_1915
+	push	_1986
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1917
+	jne	_1988
 	call	_brl_blitz_NullObjectError
-_1917:
+_1988:
 	push	0
 	mov	eax,dword [ebp-16]
 	mov	dword [ebp+-32],eax
@@ -6840,30 +6990,30 @@ _1917:
 	push	dword [ebx+24]
 	call	_bbPositionEntity
 	add	esp,20
-	push	_1918
+	push	_1989
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,dword [ebp-24]
 	mov	dword [ebp-28],eax
 	cmp	dword [ebp-28],_bbNullObject
-	jne	_1920
+	jne	_1991
 	call	_brl_blitz_NullObjectError
-_1920:
+_1991:
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_1922
+	jne	_1993
 	call	_brl_blitz_NullObjectError
-_1922:
+_1993:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1924
+	jne	_1995
 	call	_brl_blitz_NullObjectError
-_1924:
+_1995:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1926
+	jne	_1997
 	call	_brl_blitz_NullObjectError
-_1926:
+_1997:
 	push	0
 	push	0
 	push	dword [ebx+24]
@@ -6887,27 +7037,231 @@ _1926:
 	push	dword [eax+24]
 	call	_bbTurnEntity
 	add	esp,20
-	push	_1927
+	push	_1998
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1929
+	jne	_2000
 	call	_brl_blitz_NullObjectError
-_1929:
+_2000:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1932
+	jne	_2003
 	call	_brl_blitz_NullObjectError
-_1932:
-	mov	eax,dword [esi+92]
+_2003:
+	mov	eax,dword [esi+100]
 	mov	dword [ebx+44],eax
-	push	_1933
+	push	_2004
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
-	jmp	_518
-_518:
+	jmp	_530
+_530:
+	call	dword [_bbOnDebugLeaveScope]
+	mov	eax,ebx
+	pop	edi
+	pop	esi
+	pop	ebx
+	mov	esp,ebp
+	pop	ebp
+	ret
+__bb_player_hit:
+	push	ebp
+	mov	ebp,esp
+	sub	esp,12
+	push	ebx
+	push	esi
+	push	edi
+	mov	eax,dword [ebp+8]
+	mov	dword [ebp-4],eax
+	mov	dword [ebp-8],_bbNullObject
+	mov	dword [ebp-12],_bbNullObject
+	mov	eax,ebp
+	push	eax
+	push	_2059
+	call	dword [_bbOnDebugEnterScope]
+	add	esp,8
+	push	_2010
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2013
+	call	_brl_blitz_NullObjectError
+_2013:
+	push	_bb_bullet
+	push	0
+	push	0
+	push	0
+	push	_78
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+72]
+	add	esp,20
+	push	eax
+	call	_bbObjectDowncast
+	add	esp,8
+	mov	dword [ebp-8],eax
+	push	_2014
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2017
+	call	_brl_blitz_NullObjectError
+_2017:
+	push	_bb_enemy
+	push	0
+	push	0
+	push	0
+	push	_73
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+72]
+	add	esp,20
+	push	eax
+	call	_bbObjectDowncast
+	add	esp,8
+	mov	dword [ebp-12],eax
+	push	_2018
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	eax,dword [ebp-8]
+	cmp	eax,_bbNullObject
+	setne	al
+	movzx	eax,al
+	cmp	eax,0
+	je	_2023
+	mov	esi,dword [ebp-8]
+	cmp	esi,_bbNullObject
+	jne	_2020
+	call	_brl_blitz_NullObjectError
+_2020:
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2022
+	call	_brl_blitz_NullObjectError
+_2022:
+	mov	eax,dword [esi+56]
+	cmp	eax,dword [ebx+92]
+	setne	al
+	movzx	eax,al
+_2023:
+	cmp	eax,0
+	je	_2025
+	push	_2026
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2028
+	call	_brl_blitz_NullObjectError
+_2028:
+	mov	edi,ebx
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_2031
+	call	_brl_blitz_NullObjectError
+_2031:
+	mov	ebx,dword [ebp-8]
+	cmp	ebx,_bbNullObject
+	jne	_2033
+	call	_brl_blitz_NullObjectError
+_2033:
+	mov	eax,dword [esi+108]
+	sub	eax,dword [ebx+44]
+	mov	dword [edi+108],eax
+	push	_2034
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2036
+	call	_brl_blitz_NullObjectError
+_2036:
+	mov	ebx,dword [ebx+32]
+	cmp	ebx,_bbNullObject
+	jne	_2038
+	call	_brl_blitz_NullObjectError
+_2038:
+	push	dword [ebp-8]
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+68]
+	add	esp,8
+_2025:
+	push	_2039
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	cmp	dword [ebp-12],_bbNullObject
+	je	_2040
+	push	_2041
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2043
+	call	_brl_blitz_NullObjectError
+_2043:
+	mov	edi,ebx
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_2046
+	call	_brl_blitz_NullObjectError
+_2046:
+	mov	ebx,dword [ebp-12]
+	cmp	ebx,_bbNullObject
+	jne	_2048
+	call	_brl_blitz_NullObjectError
+_2048:
+	mov	eax,dword [esi+108]
+	sub	eax,dword [ebx+80]
+	mov	dword [edi+108],eax
+	push	_2049
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-12]
+	cmp	ebx,_bbNullObject
+	jne	_2051
+	call	_brl_blitz_NullObjectError
+_2051:
+	push	-1059061760
+	push	0
+	push	0
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+60]
+	add	esp,16
+_2040:
+	push	_2052
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2054
+	call	_brl_blitz_NullObjectError
+_2054:
+	cmp	dword [ebx+108],0
+	jg	_2055
+	push	_2056
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [_bb_ye]
+	cmp	ebx,_bbNullObject
+	jne	_2058
+	call	_brl_blitz_NullObjectError
+_2058:
+	push	0
+	push	_79
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+68]
+	add	esp,12
+_2055:
+	mov	ebx,0
+	jmp	_533
+_533:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -6925,33 +7279,33 @@ __bb_player_posCam:
 	mov	dword [ebp-4],eax
 	mov	dword [ebp-8],0
 	push	ebp
-	push	_1947
+	push	_2069
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1939
+	push	_2061
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [_bb_ye]
 	cmp	ebx,_bbNullObject
-	jne	_1942
+	jne	_2064
 	call	_brl_blitz_NullObjectError
-_1942:
+_2064:
 	mov	eax,dword [ebx+12]
 	mov	dword [ebp-8],eax
-	push	_1943
+	push	_2065
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1945
+	jne	_2067
 	call	_brl_blitz_NullObjectError
-_1945:
+_2067:
 	push	1
 	push	dword [ebx+24]
 	push	dword [ebp-8]
 	call	_bbEntityParent
 	add	esp,12
-	push	_1946
+	push	_2068
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	0
@@ -6962,8 +7316,8 @@ _1945:
 	call	_bbPositionEntity
 	add	esp,20
 	mov	ebx,0
-	jmp	_521
-_521:
+	jmp	_536
+_536:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -6988,90 +7342,90 @@ __bb_player_Create:
 	fstp	dword [ebp-20]
 	mov	dword [ebp-24],_bbNullObject
 	push	ebp
-	push	_1980
+	push	_2102
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1949
+	push	_2071
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_player
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-24],eax
-	push	_1951
+	push	_2073
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1953
+	jne	_2075
 	call	_brl_blitz_NullObjectError
-_1953:
+_2075:
 	fld	dword [ebp-4]
 	fstp	dword [ebx+8]
-	push	_1955
+	push	_2077
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1957
+	jne	_2079
 	call	_brl_blitz_NullObjectError
-_1957:
+_2079:
 	fld	dword [ebp-8]
 	fstp	dword [ebx+12]
-	push	_1959
+	push	_2081
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1961
+	jne	_2083
 	call	_brl_blitz_NullObjectError
-_1961:
+_2083:
 	fld	dword [ebp-12]
 	fstp	dword [ebx+16]
-	push	_1963
+	push	_2085
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1965
+	jne	_2087
 	call	_brl_blitz_NullObjectError
-_1965:
+_2087:
 	fld	dword [ebp-20]
 	fstp	dword [ebx+20]
-	push	_1967
+	push	_2089
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_1969
+	jne	_2091
 	call	_brl_blitz_NullObjectError
-_1969:
+_2091:
 	mov	eax,dword [ebp-16]
 	mov	dword [ebx+24],eax
-	push	_1971
+	push	_2093
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-24]
 	cmp	esi,_bbNullObject
-	jne	_1973
+	jne	_2095
 	call	_brl_blitz_NullObjectError
-_1973:
-	mov	ebx,_78
+_2095:
+	mov	ebx,_80
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+28]
 	dec	dword [eax+4]
-	jnz	_1978
+	jnz	_2100
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1978:
+_2100:
 	mov	dword [esi+28],ebx
-	push	_1979
+	push	_2101
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
-	jmp	_528
-_528:
+	jmp	_543
+_543:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -7087,7 +7441,7 @@ __bb_enemy_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_1984
+	push	_2106
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -7121,9 +7475,13 @@ __bb_enemy_New:
 	mov	dword [eax+72],4
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+76],0
+	mov	eax,dword [ebp-4]
+	mov	dword [eax+80],3
+	mov	eax,dword [ebp-4]
+	mov	dword [eax+84],1
 	mov	ebx,0
-	jmp	_531
-_531:
+	jmp	_546
+_546:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -7135,35 +7493,35 @@ __bb_enemy_Delete:
 	mov	ebp,esp
 	push	ebx
 	mov	ebx,dword [ebp+8]
-_534:
+_549:
 	mov	eax,dword [ebx+68]
 	dec	dword [eax+4]
-	jnz	_1987
+	jnz	_2109
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1987:
+_2109:
 	mov	eax,dword [ebx+64]
 	dec	dword [eax+4]
-	jnz	_1989
+	jnz	_2111
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1989:
+_2111:
 	mov	eax,dword [ebx+56]
 	dec	dword [eax+4]
-	jnz	_1991
+	jnz	_2113
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_1991:
+_2113:
 	mov	dword [ebx],_bb_yentity
 	push	ebx
 	call	__bb_yentity_Delete
 	add	esp,4
 	mov	eax,0
-	jmp	_1985
-_1985:
+	jmp	_2107
+_2107:
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
@@ -7177,28 +7535,28 @@ __bb_enemy_init:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_2012
+	push	_2134
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_1992
+	push	_2114
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yentity_init
 	add	esp,4
-	push	_1994
+	push	_2116
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_1996
+	jne	_2118
 	call	_brl_blitz_NullObjectError
-_1996:
+_2118:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_1999
+	jne	_2121
 	call	_brl_blitz_NullObjectError
-_1999:
+_2121:
 	push	dword [esi+60]
 	call	dword [_bb_ytimer+52]
 	add	esp,4
@@ -7206,20 +7564,20 @@ _1999:
 	mov	esi,eax
 	mov	eax,dword [ebx+56]
 	dec	dword [eax+4]
-	jnz	_2003
+	jnz	_2125
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_2003:
+_2125:
 	mov	dword [ebx+56],esi
-	push	_2004
+	push	_2126
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2006
+	jne	_2128
 	call	_brl_blitz_NullObjectError
-_2006:
+_2128:
 	push	5
 	call	dword [_bb_ytimer+52]
 	add	esp,4
@@ -7227,15 +7585,15 @@ _2006:
 	mov	esi,eax
 	mov	eax,dword [ebx+64]
 	dec	dword [eax+4]
-	jnz	_2011
+	jnz	_2133
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_2011:
+_2133:
 	mov	dword [ebx+64],esi
 	mov	ebx,0
-	jmp	_537
-_537:
+	jmp	_552
+_552:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -7251,70 +7609,70 @@ __bb_enemy_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_2028
+	push	_2150
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2013
+	push	_2135
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yentity_update
 	add	esp,4
-	push	_2014
+	push	_2136
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2016
+	jne	_2138
 	call	_brl_blitz_NullObjectError
-_2016:
+_2138:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+120]
 	add	esp,4
-	push	_2017
+	push	_2139
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2019
+	jne	_2141
 	call	_brl_blitz_NullObjectError
-_2019:
+_2141:
 	cmp	dword [ebx+76],0
-	je	_2020
-	push	_2021
+	je	_2142
+	push	_2143
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,0
-	jmp	_540
-_2020:
-	push	_2022
+	jmp	_555
+_2142:
+	push	_2144
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2024
+	jne	_2146
 	call	_brl_blitz_NullObjectError
-_2024:
+_2146:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+112]
 	add	esp,4
-	push	_2025
+	push	_2147
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2027
+	jne	_2149
 	call	_brl_blitz_NullObjectError
-_2027:
+_2149:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+116]
 	add	esp,4
 	mov	ebx,0
-	jmp	_540
-_540:
+	jmp	_555
+_555:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -7331,79 +7689,79 @@ __bb_enemy_move:
 	mov	dword [ebp-4],eax
 	mov	dword [ebp-8],_bbNullObject
 	push	ebp
-	push	_2117
+	push	_2239
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2029
+	push	_2151
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2031
+	jne	_2153
 	call	_brl_blitz_NullObjectError
-_2031:
+_2153:
 	mov	ebx,dword [ebx+64]
 	cmp	ebx,_bbNullObject
-	jne	_2033
+	jne	_2155
 	call	_brl_blitz_NullObjectError
-_2033:
+_2155:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
 	add	esp,4
 	cmp	eax,0
-	je	_2034
-	push	_2035
+	je	_2156
+	push	_2157
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2037
+	jne	_2159
 	call	_brl_blitz_NullObjectError
-_2037:
+_2159:
 	push	6
 	push	1
 	call	_brl_random_Rand
 	add	esp,8
 	mov	dword [ebx+72],eax
-_2034:
-	push	_2039
+_2156:
+	push	_2161
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2041
+	jne	_2163
 	call	_brl_blitz_NullObjectError
-_2041:
-	push	_79
+_2163:
+	push	_81
 	push	dword [ebx+68]
 	call	_bbStringCompare
 	add	esp,8
 	cmp	eax,0
-	jne	_2042
-	push	_2043
+	jne	_2164
+	push	_2165
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2045
+	jne	_2167
 	call	_brl_blitz_NullObjectError
-_2045:
+_2167:
 	cmp	dword [ebx+72],1
-	jne	_2046
-	push	_2047
+	jne	_2168
+	push	_2169
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2049
+	jne	_2171
 	call	_brl_blitz_NullObjectError
-_2049:
+_2171:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2051
+	jne	_2173
 	call	_brl_blitz_NullObjectError
-_2051:
+_2173:
 	push	0
 	push	dword [ebx+20]
 	push	0
@@ -7411,30 +7769,30 @@ _2051:
 	mov	eax,dword [esi]
 	call	dword [eax+60]
 	add	esp,16
-_2046:
-	push	_2052
+_2168:
+	push	_2174
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2054
+	jne	_2176
 	call	_brl_blitz_NullObjectError
-_2054:
+_2176:
 	cmp	dword [ebx+72],2
-	jne	_2055
-	push	_2056
+	jne	_2177
+	push	_2178
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2058
+	jne	_2180
 	call	_brl_blitz_NullObjectError
-_2058:
+_2180:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2060
+	jne	_2182
 	call	_brl_blitz_NullObjectError
-_2060:
+_2182:
 	push	0
 	fld	dword [ebx+20]
 	fchs
@@ -7445,30 +7803,30 @@ _2060:
 	mov	eax,dword [esi]
 	call	dword [eax+60]
 	add	esp,16
-_2055:
-	push	_2061
+_2177:
+	push	_2183
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2063
+	jne	_2185
 	call	_brl_blitz_NullObjectError
-_2063:
+_2185:
 	cmp	dword [ebx+72],3
-	jne	_2064
-	push	_2065
+	jne	_2186
+	push	_2187
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2067
+	jne	_2189
 	call	_brl_blitz_NullObjectError
-_2067:
+_2189:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2069
+	jne	_2191
 	call	_brl_blitz_NullObjectError
-_2069:
+_2191:
 	push	0
 	push	0
 	fld	dword [ebx+20]
@@ -7479,30 +7837,30 @@ _2069:
 	mov	eax,dword [esi]
 	call	dword [eax+60]
 	add	esp,16
-_2064:
-	push	_2070
+_2186:
+	push	_2192
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2072
+	jne	_2194
 	call	_brl_blitz_NullObjectError
-_2072:
+_2194:
 	cmp	dword [ebx+72],4
-	jne	_2073
-	push	_2074
+	jne	_2195
+	push	_2196
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2076
+	jne	_2198
 	call	_brl_blitz_NullObjectError
-_2076:
+_2198:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2078
+	jne	_2200
 	call	_brl_blitz_NullObjectError
-_2078:
+_2200:
 	push	0
 	push	0
 	push	dword [ebx+20]
@@ -7510,30 +7868,30 @@ _2078:
 	mov	eax,dword [esi]
 	call	dword [eax+60]
 	add	esp,16
-_2073:
-	push	_2079
+_2195:
+	push	_2201
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2081
+	jne	_2203
 	call	_brl_blitz_NullObjectError
-_2081:
+_2203:
 	cmp	dword [ebx+72],5
-	jne	_2082
-	push	_2083
+	jne	_2204
+	push	_2205
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2085
+	jne	_2207
 	call	_brl_blitz_NullObjectError
-_2085:
+_2207:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2087
+	jne	_2209
 	call	_brl_blitz_NullObjectError
-_2087:
+_2209:
 	push	dword [ebx+20]
 	push	0
 	push	0
@@ -7541,30 +7899,30 @@ _2087:
 	mov	eax,dword [esi]
 	call	dword [eax+60]
 	add	esp,16
-_2082:
-	push	_2088
+_2204:
+	push	_2210
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2090
+	jne	_2212
 	call	_brl_blitz_NullObjectError
-_2090:
+_2212:
 	cmp	dword [ebx+72],6
-	jne	_2091
-	push	_2092
+	jne	_2213
+	push	_2214
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2094
+	jne	_2216
 	call	_brl_blitz_NullObjectError
-_2094:
+_2216:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2096
+	jne	_2218
 	call	_brl_blitz_NullObjectError
-_2096:
+_2218:
 	push	dword [ebx+20]
 	push	0
 	push	0
@@ -7572,40 +7930,40 @@ _2096:
 	mov	eax,dword [esi]
 	call	dword [eax+60]
 	add	esp,16
-_2091:
-_2042:
-	push	_2097
+_2213:
+_2164:
+	push	_2219
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2099
+	jne	_2221
 	call	_brl_blitz_NullObjectError
-_2099:
+_2221:
 	push	_77
 	push	dword [ebx+68]
 	call	_bbStringCompare
 	add	esp,8
 	cmp	eax,0
-	jne	_2100
-	push	_2101
+	jne	_2222
+	push	_2223
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2104
+	jne	_2226
 	call	_brl_blitz_NullObjectError
-_2104:
-	push	_78
+_2226:
+	push	_80
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,8
 	mov	ebx,eax
 	cmp	ebx,_bbNullObject
-	jne	_2106
+	jne	_2228
 	call	_brl_blitz_NullObjectError
-_2106:
+_2228:
 	push	_bb_player
 	push	ebx
 	mov	eax,dword [ebx]
@@ -7615,37 +7973,37 @@ _2106:
 	call	_bbObjectDowncast
 	add	esp,8
 	mov	dword [ebp-8],eax
-	push	_2107
+	push	_2229
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2109
+	jne	_2231
 	call	_brl_blitz_NullObjectError
-_2109:
+_2231:
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_2111
+	jne	_2233
 	call	_brl_blitz_NullObjectError
-_2111:
+_2233:
 	push	0
 	push	dword [ebx+24]
 	push	dword [esi+24]
 	call	_bbPointEntity
 	add	esp,12
-	push	_2112
+	push	_2234
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2114
+	jne	_2236
 	call	_brl_blitz_NullObjectError
-_2114:
+_2236:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2116
+	jne	_2238
 	call	_brl_blitz_NullObjectError
-_2116:
+_2238:
 	push	dword [ebx+20]
 	push	0
 	push	0
@@ -7653,10 +8011,10 @@ _2116:
 	mov	eax,dword [esi]
 	call	dword [eax+60]
 	add	esp,16
-_2100:
+_2222:
 	mov	ebx,0
-	jmp	_543
-_543:
+	jmp	_558
+_558:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -7677,46 +8035,46 @@ __bb_enemy_shoot:
 	mov	dword [ebp-12],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_2157
+	push	_2279
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2118
+	push	_2240
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2120
+	jne	_2242
 	call	_brl_blitz_NullObjectError
-_2120:
+_2242:
 	mov	ebx,dword [ebx+56]
 	cmp	ebx,_bbNullObject
-	jne	_2122
+	jne	_2244
 	call	_brl_blitz_NullObjectError
-_2122:
+_2244:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
 	add	esp,4
 	cmp	eax,0
-	je	_2123
-	push	_2124
+	je	_2245
+	push	_2246
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2127
+	jne	_2249
 	call	_brl_blitz_NullObjectError
-_2127:
-	push	_78
+_2249:
+	push	_80
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,8
 	mov	ebx,eax
 	cmp	ebx,_bbNullObject
-	jne	_2129
+	jne	_2251
 	call	_brl_blitz_NullObjectError
-_2129:
+_2251:
 	push	_bb_player
 	push	ebx
 	mov	eax,dword [ebx]
@@ -7726,7 +8084,7 @@ _2129:
 	call	_bbObjectDowncast
 	add	esp,8
 	mov	dword [ebp-8],eax
-	push	_2130
+	push	_2252
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	1065353216
@@ -7742,52 +8100,52 @@ _2129:
 	call	dword [_bb_bullet+108]
 	add	esp,20
 	mov	dword [ebp-12],eax
-	push	_2132
+	push	_2254
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2134
+	jne	_2256
 	call	_brl_blitz_NullObjectError
-_2134:
+_2256:
 	mov	ebx,dword [ebx+32]
 	cmp	ebx,_bbNullObject
-	jne	_2136
+	jne	_2258
 	call	_brl_blitz_NullObjectError
-_2136:
+_2258:
 	push	dword [ebp-12]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+64]
 	add	esp,8
-	push	_2137
+	push	_2259
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,dword [ebp-12]
 	mov	dword [ebp-16],eax
 	cmp	dword [ebp-16],_bbNullObject
-	jne	_2139
+	jne	_2261
 	call	_brl_blitz_NullObjectError
-_2139:
+_2261:
 	mov	edi,dword [ebp-4]
 	cmp	edi,_bbNullObject
-	jne	_2141
+	jne	_2263
 	call	_brl_blitz_NullObjectError
-_2141:
+_2263:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2143
+	jne	_2265
 	call	_brl_blitz_NullObjectError
-_2143:
+_2265:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2145
+	jne	_2267
 	call	_brl_blitz_NullObjectError
-_2145:
+_2267:
 	push	0
 	push	dword [ebx+16]
 	fld	dword [esi+12]
-	fadd	dword [_2965]
+	fadd	dword [_3202]
 	sub	esp,4
 	fstp	dword [esp]
 	push	dword [edi+8]
@@ -7795,43 +8153,43 @@ _2145:
 	push	dword [eax+24]
 	call	_bbPositionEntity
 	add	esp,20
-	push	_2146
+	push	_2268
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-12]
 	cmp	esi,_bbNullObject
-	jne	_2148
+	jne	_2270
 	call	_brl_blitz_NullObjectError
-_2148:
+_2270:
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_2150
+	jne	_2272
 	call	_brl_blitz_NullObjectError
-_2150:
+_2272:
 	push	0
 	push	dword [ebx+24]
 	push	dword [esi+24]
 	call	_bbPointEntity
 	add	esp,12
-	push	_2151
+	push	_2273
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-12]
 	cmp	ebx,_bbNullObject
-	jne	_2153
+	jne	_2275
 	call	_brl_blitz_NullObjectError
-_2153:
+_2275:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2156
+	jne	_2278
 	call	_brl_blitz_NullObjectError
-_2156:
+_2278:
 	mov	eax,dword [esi+52]
 	mov	dword [ebx+56],eax
-_2123:
+_2245:
 	mov	ebx,0
-	jmp	_546
-_546:
+	jmp	_561
+_561:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -7852,22 +8210,22 @@ __bb_enemy_hit:
 	mov	dword [ebp-8],_bbNullObject
 	mov	eax,ebp
 	push	eax
-	push	_2196
+	push	_2318
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2158
+	push	_2280
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2161
+	jne	_2283
 	call	_brl_blitz_NullObjectError
-_2161:
+_2283:
 	push	_bb_bullet
 	push	0
 	push	0
 	push	0
-	push	_80
+	push	_78
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+72]
@@ -7876,7 +8234,7 @@ _2161:
 	call	_bbObjectDowncast
 	add	esp,8
 	mov	dword [ebp-8],eax
-	push	_2162
+	push	_2284
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	eax,dword [ebp-8]
@@ -7884,106 +8242,106 @@ _2161:
 	setne	al
 	movzx	eax,al
 	cmp	eax,0
-	je	_2167
+	je	_2289
 	mov	esi,dword [ebp-8]
 	cmp	esi,_bbNullObject
-	jne	_2164
+	jne	_2286
 	call	_brl_blitz_NullObjectError
-_2164:
+_2286:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2166
+	jne	_2288
 	call	_brl_blitz_NullObjectError
-_2166:
+_2288:
 	mov	eax,dword [esi+56]
 	cmp	eax,dword [ebx+52]
 	setne	al
 	movzx	eax,al
-_2167:
+_2289:
 	cmp	eax,0
-	je	_2169
-	push	_2170
+	je	_2291
+	push	_2292
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2172
+	jne	_2294
 	call	_brl_blitz_NullObjectError
-_2172:
+_2294:
 	mov	edi,ebx
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2175
+	jne	_2297
 	call	_brl_blitz_NullObjectError
-_2175:
+_2297:
 	mov	ebx,dword [ebp-8]
 	cmp	ebx,_bbNullObject
-	jne	_2177
+	jne	_2299
 	call	_brl_blitz_NullObjectError
-_2177:
+_2299:
 	mov	eax,dword [esi+48]
 	sub	eax,dword [ebx+44]
 	mov	dword [edi+48],eax
-	push	_2178
+	push	_2300
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2180
+	jne	_2302
 	call	_brl_blitz_NullObjectError
-_2180:
+_2302:
 	mov	ebx,dword [ebx+32]
 	cmp	ebx,_bbNullObject
-	jne	_2182
+	jne	_2304
 	call	_brl_blitz_NullObjectError
-_2182:
+_2304:
 	push	dword [ebp-8]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,8
-_2169:
-	push	_2183
+_2291:
+	push	_2305
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2185
+	jne	_2307
 	call	_brl_blitz_NullObjectError
-_2185:
+_2307:
 	cmp	dword [ebx+48],0
-	jg	_2186
-	push	_2187
+	jg	_2308
+	push	_2309
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2189
+	jne	_2311
 	call	_brl_blitz_NullObjectError
-_2189:
+_2311:
 	mov	ebx,dword [ebx+32]
 	cmp	ebx,_bbNullObject
-	jne	_2191
+	jne	_2313
 	call	_brl_blitz_NullObjectError
-_2191:
+_2313:
 	push	dword [ebp-4]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,8
-	push	_2192
+	push	_2314
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2194
+	jne	_2316
 	call	_brl_blitz_NullObjectError
-_2194:
+_2316:
 	mov	dword [ebx+76],1
-_2186:
+_2308:
 	mov	ebx,0
-	jmp	_549
-_549:
+	jmp	_564
+_564:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	edi
@@ -8010,90 +8368,90 @@ __bb_enemy_Create:
 	fstp	dword [ebp-20]
 	mov	dword [ebp-24],_bbNullObject
 	push	ebp
-	push	_2228
+	push	_2350
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2197
+	push	_2319
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_enemy
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-24],eax
-	push	_2199
+	push	_2321
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2201
+	jne	_2323
 	call	_brl_blitz_NullObjectError
-_2201:
+_2323:
 	fld	dword [ebp-4]
 	fstp	dword [ebx+8]
-	push	_2203
+	push	_2325
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2205
+	jne	_2327
 	call	_brl_blitz_NullObjectError
-_2205:
+_2327:
 	fld	dword [ebp-8]
 	fstp	dword [ebx+12]
-	push	_2207
+	push	_2329
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2209
+	jne	_2331
 	call	_brl_blitz_NullObjectError
-_2209:
+_2331:
 	fld	dword [ebp-12]
 	fstp	dword [ebx+16]
-	push	_2211
+	push	_2333
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2213
+	jne	_2335
 	call	_brl_blitz_NullObjectError
-_2213:
+_2335:
 	fld	dword [ebp-20]
 	fstp	dword [ebx+20]
-	push	_2215
+	push	_2337
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2217
+	jne	_2339
 	call	_brl_blitz_NullObjectError
-_2217:
+_2339:
 	mov	eax,dword [ebp-16]
 	mov	dword [ebx+24],eax
-	push	_2219
+	push	_2341
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-24]
 	cmp	esi,_bbNullObject
-	jne	_2221
+	jne	_2343
 	call	_brl_blitz_NullObjectError
-_2221:
+_2343:
 	mov	ebx,_73
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+28]
 	dec	dword [eax+4]
-	jnz	_2226
+	jnz	_2348
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_2226:
+_2348:
 	mov	dword [esi+28],ebx
-	push	_2227
+	push	_2349
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
-	jmp	_556
-_556:
+	jmp	_571
+_571:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -8109,7 +8467,7 @@ __bb_bullet_New:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_2232
+	push	_2354
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
 	push	dword [ebp-4]
@@ -8124,11 +8482,11 @@ __bb_bullet_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+48],edx
 	mov	eax,dword [ebp-4]
-	fld	dword [_3009]
+	fld	dword [_3246]
 	fstp	dword [eax+52]
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+56],1
-	mov	edx,_80
+	mov	edx,_78
 	inc	dword [edx+4]
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+60],edx
@@ -8137,8 +8495,8 @@ __bb_bullet_New:
 	mov	eax,dword [ebp-4]
 	mov	dword [eax+64],edx
 	mov	ebx,0
-	jmp	_559
-_559:
+	jmp	_574
+_574:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -8150,35 +8508,35 @@ __bb_bullet_Delete:
 	mov	ebp,esp
 	push	ebx
 	mov	ebx,dword [ebp+8]
-_562:
+_577:
 	mov	eax,dword [ebx+64]
 	dec	dword [eax+4]
-	jnz	_2235
+	jnz	_2357
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_2235:
+_2357:
 	mov	eax,dword [ebx+60]
 	dec	dword [eax+4]
-	jnz	_2237
+	jnz	_2359
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_2237:
+_2359:
 	mov	eax,dword [ebx+48]
 	dec	dword [eax+4]
-	jnz	_2239
+	jnz	_2361
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_2239:
+_2361:
 	mov	dword [ebx],_bb_yentity
 	push	ebx
 	call	__bb_yentity_Delete
 	add	esp,4
 	mov	eax,0
-	jmp	_2233
-_2233:
+	jmp	_2355
+_2355:
 	pop	ebx
 	mov	esp,ebp
 	pop	ebp
@@ -8192,28 +8550,28 @@ __bb_bullet_init:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_2252
+	push	_2374
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2240
+	push	_2362
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yentity_init
 	add	esp,4
-	push	_2242
+	push	_2364
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2244
+	jne	_2366
 	call	_brl_blitz_NullObjectError
-_2244:
+_2366:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2247
+	jne	_2369
 	call	_brl_blitz_NullObjectError
-_2247:
+_2369:
 	fld	dword [esi+52]
 	sub	esp,8
 	fstp	qword [esp]
@@ -8226,15 +8584,15 @@ _2247:
 	mov	esi,eax
 	mov	eax,dword [ebx+48]
 	dec	dword [eax+4]
-	jnz	_2251
+	jnz	_2373
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_2251:
+_2373:
 	mov	dword [ebx+48],esi
 	mov	ebx,0
-	jmp	_565
-_565:
+	jmp	_580
+_580:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -8250,42 +8608,42 @@ __bb_bullet_update:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_2260
+	push	_2382
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2253
+	push	_2375
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	dword [ebp-4]
 	call	__bb_yentity_update
 	add	esp,4
-	push	_2254
+	push	_2376
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2256
+	jne	_2378
 	call	_brl_blitz_NullObjectError
-_2256:
+_2378:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+116]
 	add	esp,4
-	push	_2257
+	push	_2379
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2259
+	jne	_2381
 	call	_brl_blitz_NullObjectError
-_2259:
+_2381:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+112]
 	add	esp,4
 	mov	ebx,0
-	jmp	_568
-_568:
+	jmp	_583
+_583:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -8300,50 +8658,50 @@ __bb_bullet_disappear:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_2272
+	push	_2394
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2261
+	push	_2383
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2263
+	jne	_2385
 	call	_brl_blitz_NullObjectError
-_2263:
+_2385:
 	mov	ebx,dword [ebx+48]
 	cmp	ebx,_bbNullObject
-	jne	_2265
+	jne	_2387
 	call	_brl_blitz_NullObjectError
-_2265:
+_2387:
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+48]
 	add	esp,4
 	cmp	eax,0
-	je	_2266
-	push	_2267
+	je	_2388
+	push	_2389
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2269
+	jne	_2391
 	call	_brl_blitz_NullObjectError
-_2269:
+_2391:
 	mov	ebx,dword [ebx+32]
 	cmp	ebx,_bbNullObject
-	jne	_2271
+	jne	_2393
 	call	_brl_blitz_NullObjectError
-_2271:
+_2393:
 	push	dword [ebp-4]
 	push	ebx
 	mov	eax,dword [ebx]
 	call	dword [eax+68]
 	add	esp,8
-_2266:
+_2388:
 	mov	ebx,0
-	jmp	_571
-_571:
+	jmp	_586
+_586:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	ebx
@@ -8359,17 +8717,17 @@ __bb_bullet_move:
 	mov	eax,dword [ebp+8]
 	mov	dword [ebp-4],eax
 	push	ebp
-	push	_2295
+	push	_2417
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2273
+	push	_2395
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2275
+	jne	_2397
 	call	_brl_blitz_NullObjectError
-_2275:
+_2397:
 	push	_77
 	push	dword [ebx+60]
 	call	_bbStringCompare
@@ -8378,61 +8736,61 @@ _2275:
 	sete	al
 	movzx	eax,al
 	cmp	eax,0
-	je	_2280
+	je	_2402
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2277
+	jne	_2399
 	call	_brl_blitz_NullObjectError
-_2277:
+_2399:
 	mov	ebx,dword [ebx+64]
 	cmp	ebx,_bbNullObject
-	jne	_2279
+	jne	_2401
 	call	_brl_blitz_NullObjectError
-_2279:
+_2401:
 	mov	eax,dword [ebx+24]
 	cmp	eax,0
 	setne	al
 	movzx	eax,al
-_2280:
+_2402:
 	cmp	eax,0
-	je	_2282
-	push	_2283
+	je	_2404
+	push	_2405
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2285
+	jne	_2407
 	call	_brl_blitz_NullObjectError
-_2285:
+_2407:
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2287
+	jne	_2409
 	call	_brl_blitz_NullObjectError
-_2287:
+_2409:
 	mov	esi,dword [esi+64]
 	cmp	esi,_bbNullObject
-	jne	_2289
+	jne	_2411
 	call	_brl_blitz_NullObjectError
-_2289:
+_2411:
 	push	0
 	push	dword [esi+24]
 	push	dword [ebx+24]
 	call	_bbPointEntity
 	add	esp,12
-_2282:
-	push	_2290
+_2404:
+	push	_2412
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-4]
 	cmp	esi,_bbNullObject
-	jne	_2292
+	jne	_2414
 	call	_brl_blitz_NullObjectError
-_2292:
+_2414:
 	mov	ebx,dword [ebp-4]
 	cmp	ebx,_bbNullObject
-	jne	_2294
+	jne	_2416
 	call	_brl_blitz_NullObjectError
-_2294:
+_2416:
 	push	dword [ebx+20]
 	push	0
 	push	0
@@ -8441,8 +8799,8 @@ _2294:
 	call	dword [eax+60]
 	add	esp,16
 	mov	ebx,0
-	jmp	_574
-_574:
+	jmp	_589
+_589:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -8468,90 +8826,457 @@ __bb_bullet_Create:
 	fstp	dword [ebp-20]
 	mov	dword [ebp-24],_bbNullObject
 	push	ebp
-	push	_2327
+	push	_2449
 	call	dword [_bbOnDebugEnterScope]
 	add	esp,8
-	push	_2296
+	push	_2418
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	push	_bb_bullet
 	call	_bbObjectNew
 	add	esp,4
 	mov	dword [ebp-24],eax
-	push	_2298
+	push	_2420
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2300
+	jne	_2422
 	call	_brl_blitz_NullObjectError
-_2300:
+_2422:
 	fld	dword [ebp-4]
 	fstp	dword [ebx+8]
-	push	_2302
+	push	_2424
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2304
+	jne	_2426
 	call	_brl_blitz_NullObjectError
-_2304:
+_2426:
 	fld	dword [ebp-8]
 	fstp	dword [ebx+12]
-	push	_2306
+	push	_2428
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2308
+	jne	_2430
 	call	_brl_blitz_NullObjectError
-_2308:
+_2430:
 	fld	dword [ebp-12]
 	fstp	dword [ebx+16]
-	push	_2310
+	push	_2432
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2312
+	jne	_2434
 	call	_brl_blitz_NullObjectError
-_2312:
+_2434:
 	fld	dword [ebp-20]
 	fstp	dword [ebx+20]
-	push	_2314
+	push	_2436
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
 	cmp	ebx,_bbNullObject
-	jne	_2316
+	jne	_2438
 	call	_brl_blitz_NullObjectError
-_2316:
+_2438:
 	mov	eax,dword [ebp-16]
 	mov	dword [ebx+24],eax
-	push	_2318
+	push	_2440
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	esi,dword [ebp-24]
 	cmp	esi,_bbNullObject
-	jne	_2320
+	jne	_2442
 	call	_brl_blitz_NullObjectError
-_2320:
-	mov	ebx,_80
+_2442:
+	mov	ebx,_78
 	inc	dword [ebx+4]
 	mov	eax,dword [esi+28]
 	dec	dword [eax+4]
-	jnz	_2325
+	jnz	_2447
 	push	eax
 	call	_bbGCFree
 	add	esp,4
-_2325:
+_2447:
 	mov	dword [esi+28],ebx
-	push	_2326
+	push	_2448
 	call	dword [_bbOnDebugEnterStm]
 	add	esp,4
 	mov	ebx,dword [ebp-24]
-	jmp	_581
-_581:
+	jmp	_596
+_596:
+	call	dword [_bbOnDebugLeaveScope]
+	mov	eax,ebx
+	pop	esi
+	pop	ebx
+	mov	esp,ebp
+	pop	ebp
+	ret
+__bb_spawner_New:
+	push	ebp
+	mov	ebp,esp
+	sub	esp,4
+	push	ebx
+	mov	eax,dword [ebp+8]
+	mov	dword [ebp-4],eax
+	push	ebp
+	push	_2451
+	call	dword [_bbOnDebugEnterScope]
+	add	esp,8
+	push	dword [ebp-4]
+	call	__bb_yentity_New
+	add	esp,4
+	mov	eax,dword [ebp-4]
+	mov	dword [eax],_bb_spawner
+	mov	edx,_bbNullObject
+	inc	dword [edx+4]
+	mov	eax,dword [ebp-4]
+	mov	dword [eax+44],edx
+	mov	eax,dword [ebp-4]
+	mov	dword [eax+48],3
+	mov	eax,dword [ebp-4]
+	mov	dword [eax+52],1
+	mov	ebx,0
+	jmp	_599
+_599:
+	call	dword [_bbOnDebugLeaveScope]
+	mov	eax,ebx
+	pop	ebx
+	mov	esp,ebp
+	pop	ebp
+	ret
+__bb_spawner_Delete:
+	push	ebp
+	mov	ebp,esp
+	push	ebx
+	mov	ebx,dword [ebp+8]
+_602:
+	mov	eax,dword [ebx+44]
+	dec	dword [eax+4]
+	jnz	_2454
+	push	eax
+	call	_bbGCFree
+	add	esp,4
+_2454:
+	mov	dword [ebx],_bb_yentity
+	push	ebx
+	call	__bb_yentity_Delete
+	add	esp,4
+	mov	eax,0
+	jmp	_2452
+_2452:
+	pop	ebx
+	mov	esp,ebp
+	pop	ebp
+	ret
+__bb_spawner_init:
+	push	ebp
+	mov	ebp,esp
+	sub	esp,4
+	push	ebx
+	push	esi
+	mov	eax,dword [ebp+8]
+	mov	dword [ebp-4],eax
+	push	ebp
+	push	_2467
+	call	dword [_bbOnDebugEnterScope]
+	add	esp,8
+	push	_2455
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	push	dword [ebp-4]
+	call	__bb_yentity_init
+	add	esp,4
+	push	_2457
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2459
+	call	_brl_blitz_NullObjectError
+_2459:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_2462
+	call	_brl_blitz_NullObjectError
+_2462:
+	push	dword [esi+48]
+	call	dword [_bb_ytimer+52]
+	add	esp,4
+	inc	dword [eax+4]
+	mov	esi,eax
+	mov	eax,dword [ebx+44]
+	dec	dword [eax+4]
+	jnz	_2466
+	push	eax
+	call	_bbGCFree
+	add	esp,4
+_2466:
+	mov	dword [ebx+44],esi
+	mov	ebx,0
+	jmp	_605
+_605:
+	call	dword [_bbOnDebugLeaveScope]
+	mov	eax,ebx
+	pop	esi
+	pop	ebx
+	mov	esp,ebp
+	pop	ebp
+	ret
+__bb_spawner_update:
+	push	ebp
+	mov	ebp,esp
+	sub	esp,4
+	push	ebx
+	mov	eax,dword [ebp+8]
+	mov	dword [ebp-4],eax
+	push	ebp
+	push	_2472
+	call	dword [_bbOnDebugEnterScope]
+	add	esp,8
+	push	_2468
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	push	dword [ebp-4]
+	call	__bb_yentity_update
+	add	esp,4
+	push	_2469
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2471
+	call	_brl_blitz_NullObjectError
+_2471:
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+112]
+	add	esp,4
+	mov	ebx,0
+	jmp	_608
+_608:
+	call	dword [_bbOnDebugLeaveScope]
+	mov	eax,ebx
+	pop	ebx
+	mov	esp,ebp
+	pop	ebp
+	ret
+__bb_spawner_spawn:
+	push	ebp
+	mov	ebp,esp
+	sub	esp,8
+	push	ebx
+	push	esi
+	push	edi
+	mov	eax,dword [ebp+8]
+	mov	dword [ebp-4],eax
+	mov	dword [ebp-8],_bbNullObject
+	mov	eax,ebp
+	push	eax
+	push	_2498
+	call	dword [_bbOnDebugEnterScope]
+	add	esp,8
+	push	_2473
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2475
+	call	_brl_blitz_NullObjectError
+_2475:
+	mov	ebx,dword [ebx+44]
+	cmp	ebx,_bbNullObject
+	jne	_2477
+	call	_brl_blitz_NullObjectError
+_2477:
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+48]
+	add	esp,4
+	cmp	eax,0
+	je	_2478
+	push	_2479
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	edi,dword [ebp-4]
+	cmp	edi,_bbNullObject
+	jne	_2482
+	call	_brl_blitz_NullObjectError
+_2482:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_2484
+	call	_brl_blitz_NullObjectError
+_2484:
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2486
+	call	_brl_blitz_NullObjectError
+_2486:
+	push	1041865114
+	push	0
+	push	8
+	call	_bbCreateSphere
+	add	esp,8
+	push	eax
+	push	dword [ebx+16]
+	push	dword [esi+12]
+	push	dword [edi+8]
+	call	dword [_bb_enemy+108]
+	add	esp,20
+	mov	dword [ebp-8],eax
+	push	_2487
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-8]
+	cmp	ebx,_bbNullObject
+	jne	_2489
+	call	_brl_blitz_NullObjectError
+_2489:
+	mov	esi,dword [ebp-4]
+	cmp	esi,_bbNullObject
+	jne	_2492
+	call	_brl_blitz_NullObjectError
+_2492:
+	mov	eax,dword [esi+52]
+	mov	dword [ebx+84],eax
+	push	_2493
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-4]
+	cmp	ebx,_bbNullObject
+	jne	_2495
+	call	_brl_blitz_NullObjectError
+_2495:
+	mov	ebx,dword [ebx+32]
+	cmp	ebx,_bbNullObject
+	jne	_2497
+	call	_brl_blitz_NullObjectError
+_2497:
+	push	dword [ebp-8]
+	push	ebx
+	mov	eax,dword [ebx]
+	call	dword [eax+64]
+	add	esp,8
+_2478:
+	mov	ebx,0
+	jmp	_611
+_611:
+	call	dword [_bbOnDebugLeaveScope]
+	mov	eax,ebx
+	pop	edi
+	pop	esi
+	pop	ebx
+	mov	esp,ebp
+	pop	ebp
+	ret
+__bb_spawner_Create:
+	push	ebp
+	mov	ebp,esp
+	sub	esp,24
+	push	ebx
+	push	esi
+	fld	dword [ebp+8]
+	fstp	dword [ebp-4]
+	fld	dword [ebp+12]
+	fstp	dword [ebp-8]
+	fld	dword [ebp+16]
+	fstp	dword [ebp-12]
+	mov	eax,dword [ebp+20]
+	mov	dword [ebp-16],eax
+	fld	dword [ebp+24]
+	fstp	dword [ebp-20]
+	mov	dword [ebp-24],_bbNullObject
+	push	ebp
+	push	_2531
+	call	dword [_bbOnDebugEnterScope]
+	add	esp,8
+	push	_2500
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	push	_bb_spawner
+	call	_bbObjectNew
+	add	esp,4
+	mov	dword [ebp-24],eax
+	push	_2502
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-24]
+	cmp	ebx,_bbNullObject
+	jne	_2504
+	call	_brl_blitz_NullObjectError
+_2504:
+	fld	dword [ebp-4]
+	fstp	dword [ebx+8]
+	push	_2506
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-24]
+	cmp	ebx,_bbNullObject
+	jne	_2508
+	call	_brl_blitz_NullObjectError
+_2508:
+	fld	dword [ebp-8]
+	fstp	dword [ebx+12]
+	push	_2510
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-24]
+	cmp	ebx,_bbNullObject
+	jne	_2512
+	call	_brl_blitz_NullObjectError
+_2512:
+	fld	dword [ebp-12]
+	fstp	dword [ebx+16]
+	push	_2514
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-24]
+	cmp	ebx,_bbNullObject
+	jne	_2516
+	call	_brl_blitz_NullObjectError
+_2516:
+	fld	dword [ebp-20]
+	fstp	dword [ebx+20]
+	push	_2518
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-24]
+	cmp	ebx,_bbNullObject
+	jne	_2520
+	call	_brl_blitz_NullObjectError
+_2520:
+	mov	eax,dword [ebp-16]
+	mov	dword [ebx+24],eax
+	push	_2522
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	esi,dword [ebp-24]
+	cmp	esi,_bbNullObject
+	jne	_2524
+	call	_brl_blitz_NullObjectError
+_2524:
+	mov	ebx,_82
+	inc	dword [ebx+4]
+	mov	eax,dword [esi+28]
+	dec	dword [eax+4]
+	jnz	_2529
+	push	eax
+	call	_bbGCFree
+	add	esp,4
+_2529:
+	mov	dword [esi+28],ebx
+	push	_2530
+	call	dword [_bbOnDebugEnterStm]
+	add	esp,4
+	mov	ebx,dword [ebp-24]
+	jmp	_618
+_618:
 	call	dword [_bbOnDebugLeaveScope]
 	mov	eax,ebx
 	pop	esi
@@ -8561,173 +9286,173 @@ _581:
 	ret
 	section	"data" data writeable align 8
 	align	4
-_631:
+_668:
 	dd	0
-_624:
+_661:
 	db	"main",0
-_625:
+_662:
 	db	"info1",0
-_113:
+_114:
 	db	"$",0
 	align	4
-_81:
+_83:
 	dd	_bbStringClass
 	dd	2147483647
 	dd	7
 	dw	121,101,110,103,105,110,101
 	align	4
 _bb_info1:
-	dd	_81
-_114:
-	db	"ye",0
+	dd	_83
 _115:
+	db	"ye",0
+_116:
 	db	":yengine",0
 	align	4
 _bb_ye:
 	dd	_bbNullObject
-_626:
+_663:
 	db	"start",0
-_92:
+_93:
 	db	"i",0
-_627:
+_664:
 	db	"tst",0
-_628:
+_665:
 	db	":game_world",0
-_629:
+_666:
 	db	"winw",0
-_630:
+_667:
 	db	"_game_over",0
 	align	4
-_623:
+_660:
 	dd	1
-	dd	_624
+	dd	_661
 	dd	4
-	dd	_625
-	dd	_113
+	dd	_662
+	dd	_114
 	dd	_bb_info1
 	dd	4
-	dd	_114
 	dd	_115
+	dd	_116
 	dd	_bb_ye
 	dd	2
-	dd	_626
-	dd	_92
+	dd	_663
+	dd	_93
 	dd	-4
 	dd	2
-	dd	_627
-	dd	_628
+	dd	_664
+	dd	_665
 	dd	-8
 	dd	2
-	dd	_629
-	dd	_92
+	dd	_666
+	dd	_93
 	dd	-12
 	dd	2
-	dd	_630
-	dd	_92
+	dd	_667
+	dd	_93
 	dd	-16
 	dd	0
-_88:
-	db	"yengine",0
 _89:
-	db	"current_world",0
+	db	"yengine",0
 _90:
-	db	":yworld",0
+	db	"current_world",0
 _91:
+	db	":yworld",0
+_92:
 	db	"camera",0
-_93:
-	db	"light",0
 _94:
-	db	"worlds",0
+	db	"light",0
 _95:
-	db	":TList",0
+	db	"worlds",0
 _96:
-	db	"New",0
+	db	":TList",0
 _97:
-	db	"()i",0
+	db	"New",0
 _98:
-	db	"Delete",0
+	db	"()i",0
 _99:
-	db	"init",0
+	db	"Delete",0
 _100:
-	db	"update",0
+	db	"init",0
 _101:
-	db	"twodupdate",0
+	db	"update",0
 _102:
-	db	"render",0
+	db	"twodupdate",0
 _103:
-	db	"add_world",0
+	db	"render",0
 _104:
-	db	"(:yworld,$)i",0
+	db	"add_world",0
 _105:
-	db	"change_world",0
+	db	"(:yworld,$)i",0
 _106:
-	db	"($,i)i",0
+	db	"change_world",0
 _107:
-	db	"Create",0
+	db	"($,i)i",0
 _108:
+	db	"Create",0
+_109:
 	db	"():yengine",0
 	align	4
-_87:
+_88:
 	dd	2
-	dd	_88
-	dd	3
 	dd	_89
+	dd	3
 	dd	_90
+	dd	_91
 	dd	8
 	dd	3
-	dd	_91
 	dd	_92
+	dd	_93
 	dd	12
 	dd	3
+	dd	_94
 	dd	_93
-	dd	_92
 	dd	16
 	dd	3
-	dd	_94
 	dd	_95
+	dd	_96
 	dd	20
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_101
-	dd	_97
+	dd	_102
+	dd	_98
 	dd	56
 	dd	6
-	dd	_102
-	dd	_97
+	dd	_103
+	dd	_98
 	dd	60
 	dd	6
-	dd	_103
 	dd	_104
+	dd	_105
 	dd	64
 	dd	6
-	dd	_105
 	dd	_106
+	dd	_107
 	dd	68
 	dd	7
-	dd	_107
 	dd	_108
+	dd	_109
 	dd	72
 	dd	0
 	align	4
 _bb_yengine:
 	dd	_bbObjectClass
 	dd	_bbObjectFree
-	dd	_87
+	dd	_88
 	dd	24
 	dd	__bb_yengine_New
 	dd	__bb_yengine_Delete
@@ -8744,96 +9469,96 @@ _bb_yengine:
 	dd	__bb_yengine_add_world
 	dd	__bb_yengine_change_world
 	dd	__bb_yengine_Create
-_110:
-	db	"yworld",0
 _111:
-	db	"mcs",0
+	db	"yworld",0
 _112:
+	db	"mcs",0
+_113:
 	db	"name",0
-_116:
-	db	"add",0
 _117:
-	db	"(:yentity)i",0
+	db	"add",0
 _118:
-	db	"remove",0
+	db	"(:yentity)i",0
 _119:
-	db	"remove_all",0
+	db	"remove",0
 _120:
-	db	"hide_all",0
+	db	"remove_all",0
 _121:
-	db	"show_all",0
+	db	"hide_all",0
 _122:
+	db	"show_all",0
+_123:
 	db	"():yworld",0
 	align	4
-_109:
+_110:
 	dd	2
-	dd	_110
-	dd	3
 	dd	_111
-	dd	_95
-	dd	8
 	dd	3
 	dd	_112
+	dd	_96
+	dd	8
+	dd	3
 	dd	_113
+	dd	_114
 	dd	12
 	dd	3
-	dd	_114
 	dd	_115
+	dd	_116
 	dd	16
 	dd	6
-	dd	_96
 	dd	_97
-	dd	16
-	dd	6
 	dd	_98
-	dd	_97
-	dd	20
+	dd	16
 	dd	6
 	dd	_99
-	dd	_97
-	dd	48
+	dd	_98
+	dd	20
 	dd	6
 	dd	_100
-	dd	_97
-	dd	52
+	dd	_98
+	dd	48
 	dd	6
 	dd	_101
-	dd	_97
-	dd	56
+	dd	_98
+	dd	52
 	dd	6
 	dd	_102
-	dd	_97
+	dd	_98
+	dd	56
+	dd	6
+	dd	_103
+	dd	_98
 	dd	60
 	dd	6
-	dd	_116
 	dd	_117
+	dd	_118
 	dd	64
 	dd	6
+	dd	_119
 	dd	_118
-	dd	_117
 	dd	68
 	dd	6
-	dd	_119
-	dd	_97
+	dd	_120
+	dd	_98
 	dd	72
 	dd	6
-	dd	_120
-	dd	_97
+	dd	_121
+	dd	_98
 	dd	76
 	dd	6
-	dd	_121
-	dd	_97
+	dd	_122
+	dd	_98
 	dd	80
 	dd	7
-	dd	_107
-	dd	_122
+	dd	_108
+	dd	_123
 	dd	84
 	dd	0
 	align	4
 _bb_yworld:
 	dd	_bbObjectClass
 	dd	_bbObjectFree
-	dd	_109
+	dd	_110
 	dd	20
 	dd	__bb_yworld_New
 	dd	__bb_yworld_Delete
@@ -8853,40 +9578,40 @@ _bb_yworld:
 	dd	__bb_yworld_hide_all
 	dd	__bb_yworld_show_all
 	dd	__bb_yworld_Create
-_124:
-	db	"tstw",0
 _125:
+	db	"tstw",0
+_126:
 	db	"():tstw",0
 	align	4
-_123:
+_124:
 	dd	2
-	dd	_124
+	dd	_125
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	7
-	dd	_107
-	dd	_125
+	dd	_108
+	dd	_126
 	dd	84
 	dd	0
 	align	4
 _bb_tstw:
 	dd	_bb_yworld
 	dd	_bbObjectFree
-	dd	_123
+	dd	_124
 	dd	20
 	dd	__bb_tstw_New
 	dd	__bb_tstw_Delete
@@ -8906,182 +9631,182 @@ _bb_tstw:
 	dd	__bb_yworld_hide_all
 	dd	__bb_yworld_show_all
 	dd	__bb_tstw_Create
-_127:
-	db	"yentity",0
 _128:
-	db	"x",0
+	db	"yentity",0
 _129:
-	db	"f",0
+	db	"x",0
 _130:
-	db	"y",0
+	db	"f",0
 _131:
-	db	"z",0
+	db	"y",0
 _132:
-	db	"speed",0
+	db	"z",0
 _133:
-	db	"grafic",0
+	db	"speed",0
 _134:
-	db	"ytype",0
+	db	"grafic",0
 _135:
-	db	"world",0
+	db	"ytype",0
 _136:
-	db	"collide_c",0
+	db	"world",0
 _137:
-	db	"fadeOutTimer",0
+	db	"collide_c",0
 _138:
-	db	":ytimer",0
+	db	"fadeOutTimer",0
 _139:
-	db	"move_by",0
+	db	":ytimer",0
 _140:
-	db	"(f,f,f)i",0
+	db	"move_by",0
 _141:
-	db	"set_pos",0
+	db	"(f,f,f)i",0
 _142:
-	db	"get_by_type",0
+	db	"set_pos",0
 _143:
-	db	"($):TList",0
+	db	"get_by_type",0
 _144:
-	db	"collide",0
+	db	"($):TList",0
 _145:
-	db	"($,f,f,f):yentity",0
+	db	"collide",0
 _146:
-	db	"visable",0
+	db	"($,f,f,f):yentity",0
 _147:
-	db	"(i)i",0
+	db	"visable",0
 _148:
-	db	"alpha",0
+	db	"(i)i",0
 _149:
-	db	"(f)i",0
+	db	"alpha",0
 _150:
-	db	"fadeOut",0
+	db	"(f)i",0
 _151:
-	db	"click",0
+	db	"fadeOut",0
 _152:
-	db	"sxyz",0
+	db	"click",0
 _153:
-	db	"sy",0
+	db	"sxyz",0
 _154:
-	db	"printxyz",0
+	db	"sy",0
 _155:
+	db	"printxyz",0
+_156:
 	db	"(f,f,f,i,f):yentity",0
 	align	4
-_126:
+_127:
 	dd	2
-	dd	_127
-	dd	3
 	dd	_128
+	dd	3
 	dd	_129
+	dd	_130
 	dd	8
 	dd	3
+	dd	_131
 	dd	_130
-	dd	_129
 	dd	12
 	dd	3
-	dd	_131
-	dd	_129
-	dd	16
-	dd	3
 	dd	_132
-	dd	_129
-	dd	20
+	dd	_130
+	dd	16
 	dd	3
 	dd	_133
-	dd	_92
-	dd	24
+	dd	_130
+	dd	20
 	dd	3
 	dd	_134
-	dd	_113
-	dd	28
+	dd	_93
+	dd	24
 	dd	3
 	dd	_135
-	dd	_90
-	dd	32
+	dd	_114
+	dd	28
 	dd	3
 	dd	_136
-	dd	_129
-	dd	36
+	dd	_91
+	dd	32
 	dd	3
 	dd	_137
+	dd	_130
+	dd	36
+	dd	3
 	dd	_138
+	dd	_139
 	dd	40
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_102
-	dd	_97
+	dd	_103
+	dd	_98
 	dd	56
 	dd	6
-	dd	_139
 	dd	_140
+	dd	_141
 	dd	60
 	dd	6
+	dd	_142
 	dd	_141
-	dd	_140
 	dd	64
 	dd	6
-	dd	_142
 	dd	_143
+	dd	_144
 	dd	68
 	dd	6
-	dd	_144
 	dd	_145
+	dd	_146
 	dd	72
 	dd	6
-	dd	_118
-	dd	_97
+	dd	_119
+	dd	_98
 	dd	76
 	dd	6
-	dd	_146
 	dd	_147
+	dd	_148
 	dd	80
 	dd	6
-	dd	_148
 	dd	_149
+	dd	_150
 	dd	84
 	dd	6
+	dd	_151
 	dd	_150
-	dd	_149
 	dd	88
 	dd	6
-	dd	_151
-	dd	_147
+	dd	_152
+	dd	_148
 	dd	92
 	dd	6
-	dd	_152
-	dd	_140
+	dd	_153
+	dd	_141
 	dd	96
 	dd	6
-	dd	_153
-	dd	_149
+	dd	_154
+	dd	_150
 	dd	100
 	dd	6
-	dd	_154
-	dd	_97
+	dd	_155
+	dd	_98
 	dd	104
 	dd	7
-	dd	_107
-	dd	_155
+	dd	_108
+	dd	_156
 	dd	108
 	dd	0
 	align	4
 _bb_yentity:
 	dd	_bbObjectClass
 	dd	_bbObjectFree
-	dd	_126
+	dd	_127
 	dd	44
 	dd	__bb_yentity_New
 	dd	__bb_yentity_Delete
@@ -9107,56 +9832,56 @@ _bb_yentity:
 	dd	__bb_yentity_sy
 	dd	__bb_yentity_printxyz
 	dd	__bb_yentity_Create
-_157:
-	db	"ytimer",0
 _158:
-	db	"count",0
+	db	"ytimer",0
 _159:
-	db	"max_count",0
+	db	"count",0
 _160:
-	db	"yfinished",0
+	db	"max_count",0
 _161:
-	db	"finished",0
+	db	"yfinished",0
 _162:
+	db	"finished",0
+_163:
 	db	"(i):ytimer",0
 	align	4
-_156:
+_157:
 	dd	2
-	dd	_157
-	dd	3
 	dd	_158
-	dd	_92
-	dd	8
 	dd	3
 	dd	_159
-	dd	_92
-	dd	12
+	dd	_93
+	dd	8
 	dd	3
 	dd	_160
-	dd	_92
+	dd	_93
+	dd	12
+	dd	3
+	dd	_161
+	dd	_93
 	dd	16
 	dd	6
-	dd	_96
 	dd	_97
-	dd	16
-	dd	6
 	dd	_98
-	dd	_97
+	dd	16
+	dd	6
+	dd	_99
+	dd	_98
 	dd	20
 	dd	6
-	dd	_161
-	dd	_97
+	dd	_162
+	dd	_98
 	dd	48
 	dd	7
-	dd	_107
-	dd	_162
+	dd	_108
+	dd	_163
 	dd	52
 	dd	0
 	align	4
 _bb_ytimer:
 	dd	_bbObjectClass
 	dd	_bbObjectFree
-	dd	_156
+	dd	_157
 	dd	20
 	dd	__bb_ytimer_New
 	dd	__bb_ytimer_Delete
@@ -9168,58 +9893,58 @@ _bb_ytimer:
 	dd	_bbObjectReserved
 	dd	__bb_ytimer_finished
 	dd	__bb_ytimer_Create
-_164:
-	db	"game_world",0
 _165:
-	db	"p",0
+	db	"game_world",0
 _166:
-	db	":player",0
+	db	"p",0
 _167:
-	db	"deletingMode",0
+	db	":player",0
 _168:
+	db	"deletingMode",0
+_169:
 	db	"():game_world",0
 	align	4
-_163:
+_164:
 	dd	2
-	dd	_164
-	dd	3
 	dd	_165
+	dd	3
 	dd	_166
+	dd	_167
 	dd	20
 	dd	3
-	dd	_167
-	dd	_92
+	dd	_168
+	dd	_93
 	dd	24
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_101
-	dd	_97
+	dd	_102
+	dd	_98
 	dd	56
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	7
-	dd	_107
-	dd	_168
+	dd	_108
+	dd	_169
 	dd	84
 	dd	0
 	align	4
 _bb_game_world:
 	dd	_bb_yworld
 	dd	_bbObjectFree
-	dd	_163
+	dd	_164
 	dd	28
 	dd	__bb_game_world_New
 	dd	__bb_game_world_Delete
@@ -9239,50 +9964,50 @@ _bb_game_world:
 	dd	__bb_yworld_hide_all
 	dd	__bb_yworld_show_all
 	dd	__bb_game_world_Create
-_170:
-	db	"win_world",0
 _171:
-	db	"nextLevel",0
+	db	"win_world",0
 _172:
+	db	"nextLevel",0
+_173:
 	db	"():win_world",0
 	align	4
-_169:
+_170:
 	dd	2
-	dd	_170
+	dd	_171
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	6
-	dd	_101
-	dd	_97
+	dd	_102
+	dd	_98
 	dd	56
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_171
-	dd	_97
+	dd	_172
+	dd	_98
 	dd	88
 	dd	7
-	dd	_107
-	dd	_172
+	dd	_108
+	dd	_173
 	dd	84
 	dd	0
 	align	4
 _bb_win_world:
 	dd	_bb_yworld
 	dd	_bbObjectFree
-	dd	_169
+	dd	_170
 	dd	20
 	dd	__bb_win_world_New
 	dd	__bb_win_world_Delete
@@ -9303,48 +10028,48 @@ _bb_win_world:
 	dd	__bb_yworld_show_all
 	dd	__bb_win_world_Create
 	dd	__bb_win_world_nextLevel
-_174:
-	db	"game_over",0
 _175:
+	db	"game_over",0
+_176:
 	db	"():game_over",0
 	align	4
-_173:
+_174:
 	dd	2
-	dd	_174
+	dd	_175
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	6
-	dd	_101
-	dd	_97
+	dd	_102
+	dd	_98
 	dd	56
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_171
-	dd	_97
+	dd	_172
+	dd	_98
 	dd	88
 	dd	7
-	dd	_107
-	dd	_175
+	dd	_108
+	dd	_176
 	dd	84
 	dd	0
 	align	4
 _bb_game_over:
 	dd	_bb_yworld
 	dd	_bbObjectFree
-	dd	_173
+	dd	_174
 	dd	20
 	dd	__bb_game_over_New
 	dd	__bb_game_over_Delete
@@ -9365,58 +10090,58 @@ _bb_game_over:
 	dd	__bb_yworld_show_all
 	dd	__bb_game_over_Create
 	dd	__bb_game_over_nextLevel
-_177:
-	db	"start_screen",0
 _178:
-	db	"start_btn",0
+	db	"start_screen",0
 _179:
-	db	":yentity",0
+	db	"start_btn",0
 _180:
-	db	"start_click",0
+	db	":yentity",0
 _181:
+	db	"start_click",0
+_182:
 	db	"():start_screen",0
 	align	4
-_176:
+_177:
 	dd	2
-	dd	_177
-	dd	3
 	dd	_178
+	dd	3
 	dd	_179
+	dd	_180
 	dd	20
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	6
-	dd	_101
-	dd	_97
+	dd	_102
+	dd	_98
 	dd	56
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_180
-	dd	_97
+	dd	_181
+	dd	_98
 	dd	88
 	dd	7
-	dd	_107
-	dd	_181
+	dd	_108
+	dd	_182
 	dd	84
 	dd	0
 	align	4
 _bb_start_screen:
 	dd	_bb_yworld
 	dd	_bbObjectFree
-	dd	_176
+	dd	_177
 	dd	24
 	dd	__bb_start_screen_New
 	dd	__bb_start_screen_Delete
@@ -9437,171 +10162,201 @@ _bb_start_screen:
 	dd	__bb_yworld_show_all
 	dd	__bb_start_screen_Create
 	dd	__bb_start_screen_start_click
-_183:
-	db	"player",0
 _184:
-	db	"trust",0
+	db	"player",0
 _185:
-	db	"pitch",0
+	db	"trust",0
 _186:
-	db	"yaw",0
+	db	"pitch",0
 _187:
-	db	"roll",0
+	db	"yaw",0
 _188:
-	db	"pitchs",0
+	db	"roll",0
 _189:
-	db	"yaws",0
+	db	"maxTrust",0
 _190:
-	db	"rolls",0
+	db	"minTrust",0
 _191:
-	db	"tspeed",0
+	db	"pitchs",0
 _192:
-	db	"shootTimer",0
+	db	"yaws",0
 _193:
-	db	"shootInterval",0
+	db	"rolls",0
 _194:
-	db	"team",0
+	db	"tspeed",0
 _195:
-	db	"gun_type",0
+	db	"shootTimer",0
 _196:
-	db	"bullet_dmg",0
+	db	"shootInterval",0
 _197:
-	db	"campiv",0
+	db	"team",0
 _198:
-	db	"tr",0
+	db	"gun_type",0
 _199:
-	db	"fps_cam",0
+	db	"bullet_dmg",0
 _200:
-	db	"change_gun",0
+	db	"max_hp",0
 _201:
-	db	"($)i",0
+	db	"hp",0
 _202:
-	db	"move",0
+	db	"campiv",0
 _203:
-	db	"shoot",0
+	db	"tr",0
 _204:
-	db	"make_bullet",0
+	db	"fps_cam",0
 _205:
-	db	"(i,i,i,i):bullet",0
+	db	"change_gun",0
 _206:
-	db	"posCam",0
+	db	"($)i",0
 _207:
+	db	"move",0
+_208:
+	db	"shoot",0
+_209:
+	db	"make_bullet",0
+_210:
+	db	"(i,i,i,i):bullet",0
+_211:
+	db	"hit",0
+_212:
+	db	"posCam",0
+_213:
 	db	"(f,f,f,i,f):player",0
 	align	4
-_182:
+_183:
 	dd	2
-	dd	_183
-	dd	3
 	dd	_184
-	dd	_129
-	dd	44
 	dd	3
 	dd	_185
-	dd	_129
-	dd	48
+	dd	_130
+	dd	44
 	dd	3
 	dd	_186
-	dd	_129
-	dd	52
+	dd	_130
+	dd	48
 	dd	3
 	dd	_187
-	dd	_129
-	dd	56
+	dd	_130
+	dd	52
 	dd	3
 	dd	_188
-	dd	_129
-	dd	60
+	dd	_130
+	dd	56
 	dd	3
 	dd	_189
-	dd	_129
-	dd	64
+	dd	_93
+	dd	60
 	dd	3
 	dd	_190
-	dd	_129
-	dd	68
+	dd	_93
+	dd	64
 	dd	3
 	dd	_191
-	dd	_129
-	dd	72
+	dd	_130
+	dd	68
 	dd	3
 	dd	_192
-	dd	_138
-	dd	76
+	dd	_130
+	dd	72
 	dd	3
 	dd	_193
-	dd	_92
-	dd	80
+	dd	_130
+	dd	76
 	dd	3
 	dd	_194
-	dd	_92
-	dd	84
+	dd	_130
+	dd	80
 	dd	3
 	dd	_195
-	dd	_113
-	dd	88
+	dd	_139
+	dd	84
 	dd	3
 	dd	_196
-	dd	_92
-	dd	92
+	dd	_93
+	dd	88
 	dd	3
 	dd	_197
-	dd	_92
-	dd	96
+	dd	_93
+	dd	92
 	dd	3
 	dd	_198
-	dd	_179
-	dd	100
-	dd	6
-	dd	_96
-	dd	_97
-	dd	16
-	dd	6
-	dd	_98
-	dd	_97
-	dd	20
-	dd	6
-	dd	_99
-	dd	_97
-	dd	48
-	dd	6
-	dd	_100
-	dd	_97
-	dd	52
-	dd	6
+	dd	_114
+	dd	96
+	dd	3
 	dd	_199
-	dd	_97
-	dd	112
-	dd	6
+	dd	_93
+	dd	100
+	dd	3
 	dd	_200
+	dd	_93
+	dd	104
+	dd	3
 	dd	_201
+	dd	_93
+	dd	108
+	dd	3
+	dd	_202
+	dd	_93
+	dd	112
+	dd	3
+	dd	_203
+	dd	_180
 	dd	116
 	dd	6
-	dd	_202
 	dd	_97
-	dd	120
+	dd	_98
+	dd	16
 	dd	6
-	dd	_203
-	dd	_97
-	dd	124
+	dd	_99
+	dd	_98
+	dd	20
+	dd	6
+	dd	_100
+	dd	_98
+	dd	48
+	dd	6
+	dd	_101
+	dd	_98
+	dd	52
 	dd	6
 	dd	_204
+	dd	_98
+	dd	112
+	dd	6
 	dd	_205
+	dd	_206
+	dd	116
+	dd	6
+	dd	_207
+	dd	_98
+	dd	120
+	dd	6
+	dd	_208
+	dd	_98
+	dd	124
+	dd	6
+	dd	_209
+	dd	_210
 	dd	128
 	dd	6
-	dd	_206
-	dd	_97
+	dd	_211
+	dd	_98
 	dd	132
+	dd	6
+	dd	_212
+	dd	_98
+	dd	136
 	dd	7
-	dd	_107
-	dd	_207
+	dd	_108
+	dd	_213
 	dd	108
 	dd	0
 	align	4
 _bb_player:
 	dd	_bb_yentity
 	dd	_bbObjectFree
-	dd	_182
-	dd	104
+	dd	_183
+	dd	120
 	dd	__bb_player_New
 	dd	__bb_player_Delete
 	dd	_bbObjectToString
@@ -9631,106 +10386,113 @@ _bb_player:
 	dd	__bb_player_move
 	dd	__bb_player_shoot
 	dd	__bb_player_make_bullet
+	dd	__bb_player_hit
 	dd	__bb_player_posCam
-_209:
-	db	"enemy",0
-_210:
-	db	"max_hp",0
-_211:
-	db	"hp",0
-_212:
-	db	"shootTimerInterval",0
-_213:
-	db	"moveTimer",0
-_214:
-	db	"movementType",0
 _215:
-	db	"randDir",0
+	db	"enemy",0
 _216:
-	db	"removed",0
+	db	"shootTimerInterval",0
 _217:
-	db	"hit",0
+	db	"moveTimer",0
 _218:
+	db	"movementType",0
+_219:
+	db	"randDir",0
+_220:
+	db	"removed",0
+_221:
+	db	"body_dmg",0
+_222:
+	db	"enemy_type",0
+_223:
 	db	"(f,f,f,i,f):enemy",0
 	align	4
-_208:
+_214:
 	dd	2
-	dd	_209
+	dd	_215
 	dd	3
-	dd	_210
-	dd	_92
+	dd	_200
+	dd	_93
 	dd	44
 	dd	3
-	dd	_211
-	dd	_92
+	dd	_201
+	dd	_93
 	dd	48
 	dd	3
-	dd	_194
-	dd	_92
+	dd	_197
+	dd	_93
 	dd	52
 	dd	3
-	dd	_192
-	dd	_138
+	dd	_195
+	dd	_139
 	dd	56
 	dd	3
-	dd	_212
-	dd	_92
+	dd	_216
+	dd	_93
 	dd	60
 	dd	3
-	dd	_213
-	dd	_138
+	dd	_217
+	dd	_139
 	dd	64
 	dd	3
-	dd	_214
-	dd	_113
+	dd	_218
+	dd	_114
 	dd	68
 	dd	3
-	dd	_215
-	dd	_92
+	dd	_219
+	dd	_93
 	dd	72
 	dd	3
-	dd	_216
-	dd	_92
+	dd	_220
+	dd	_93
 	dd	76
+	dd	3
+	dd	_221
+	dd	_93
+	dd	80
+	dd	3
+	dd	_222
+	dd	_93
+	dd	84
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_202
-	dd	_97
+	dd	_207
+	dd	_98
 	dd	112
 	dd	6
-	dd	_203
-	dd	_97
+	dd	_208
+	dd	_98
 	dd	116
 	dd	6
-	dd	_217
-	dd	_97
+	dd	_211
+	dd	_98
 	dd	120
 	dd	7
-	dd	_107
-	dd	_218
+	dd	_108
+	dd	_223
 	dd	108
 	dd	0
 	align	4
 _bb_enemy:
 	dd	_bb_yentity
 	dd	_bbObjectFree
-	dd	_208
-	dd	80
+	dd	_214
+	dd	88
 	dd	__bb_enemy_New
 	dd	__bb_enemy_Delete
 	dd	_bbObjectToString
@@ -9758,82 +10520,82 @@ _bb_enemy:
 	dd	__bb_enemy_move
 	dd	__bb_enemy_shoot
 	dd	__bb_enemy_hit
-_220:
-	db	"bullet",0
-_221:
-	db	"dmg",0
-_222:
-	db	"disappearTimer",0
-_223:
-	db	"disappearTimerLength",0
-_224:
-	db	"target",0
 _225:
-	db	"disappear",0
+	db	"bullet",0
 _226:
+	db	"dmg",0
+_227:
+	db	"disappearTimer",0
+_228:
+	db	"disappearTimerLength",0
+_229:
+	db	"target",0
+_230:
+	db	"disappear",0
+_231:
 	db	"(f,f,f,i,f):bullet",0
 	align	4
-_219:
+_224:
 	dd	2
-	dd	_220
+	dd	_225
 	dd	3
-	dd	_221
-	dd	_92
+	dd	_226
+	dd	_93
 	dd	44
 	dd	3
-	dd	_222
-	dd	_138
+	dd	_227
+	dd	_139
 	dd	48
 	dd	3
-	dd	_223
-	dd	_129
+	dd	_228
+	dd	_130
 	dd	52
 	dd	3
-	dd	_194
-	dd	_92
+	dd	_197
+	dd	_93
 	dd	56
 	dd	3
-	dd	_214
-	dd	_113
+	dd	_218
+	dd	_114
 	dd	60
 	dd	3
-	dd	_224
-	dd	_179
+	dd	_229
+	dd	_180
 	dd	64
 	dd	6
-	dd	_96
 	dd	_97
+	dd	_98
 	dd	16
 	dd	6
+	dd	_99
 	dd	_98
-	dd	_97
 	dd	20
 	dd	6
-	dd	_99
-	dd	_97
+	dd	_100
+	dd	_98
 	dd	48
 	dd	6
-	dd	_100
-	dd	_97
+	dd	_101
+	dd	_98
 	dd	52
 	dd	6
-	dd	_225
-	dd	_97
+	dd	_230
+	dd	_98
 	dd	112
 	dd	6
-	dd	_202
-	dd	_97
+	dd	_207
+	dd	_98
 	dd	116
 	dd	7
-	dd	_107
-	dd	_226
+	dd	_108
+	dd	_231
 	dd	108
 	dd	0
 	align	4
 _bb_bullet:
 	dd	_bb_yentity
 	dd	_bbObjectFree
-	dd	_219
+	dd	_224
 	dd	68
 	dd	__bb_bullet_New
 	dd	__bb_bullet_Delete
@@ -9861,27 +10623,111 @@ _bb_bullet:
 	dd	__bb_bullet_Create
 	dd	__bb_bullet_disappear
 	dd	__bb_bullet_move
-_584:
+_233:
+	db	"spawner",0
+_234:
+	db	"spawn_timer",0
+_235:
+	db	"spawnInterval",0
+_236:
+	db	"spawn_type",0
+_237:
+	db	"spawn",0
+_238:
+	db	"(f,f,f,i,f):spawner",0
+	align	4
+_232:
+	dd	2
+	dd	_233
+	dd	3
+	dd	_234
+	dd	_139
+	dd	44
+	dd	3
+	dd	_235
+	dd	_93
+	dd	48
+	dd	3
+	dd	_236
+	dd	_93
+	dd	52
+	dd	6
+	dd	_97
+	dd	_98
+	dd	16
+	dd	6
+	dd	_99
+	dd	_98
+	dd	20
+	dd	6
+	dd	_100
+	dd	_98
+	dd	48
+	dd	6
+	dd	_101
+	dd	_98
+	dd	52
+	dd	6
+	dd	_237
+	dd	_98
+	dd	112
+	dd	7
+	dd	_108
+	dd	_238
+	dd	108
+	dd	0
+	align	4
+_bb_spawner:
+	dd	_bb_yentity
+	dd	_bbObjectFree
+	dd	_232
+	dd	56
+	dd	__bb_spawner_New
+	dd	__bb_spawner_Delete
+	dd	_bbObjectToString
+	dd	_bbObjectCompare
+	dd	_bbObjectSendMessage
+	dd	_bbObjectReserved
+	dd	_bbObjectReserved
+	dd	_bbObjectReserved
+	dd	__bb_spawner_init
+	dd	__bb_spawner_update
+	dd	__bb_yentity_render
+	dd	__bb_yentity_move_by
+	dd	__bb_yentity_set_pos
+	dd	__bb_yentity_get_by_type
+	dd	__bb_yentity_collide
+	dd	__bb_yentity_remove
+	dd	__bb_yentity_visable
+	dd	__bb_yentity_alpha
+	dd	__bb_yentity_fadeOut
+	dd	__bb_yentity_click
+	dd	__bb_yentity_sxyz
+	dd	__bb_yentity_sy
+	dd	__bb_yentity_printxyz
+	dd	__bb_spawner_Create
+	dd	__bb_spawner_spawn
+_621:
 	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/main.bmx",0
 	align	4
-_583:
-	dd	_584
-	dd	18
+_620:
+	dd	_621
+	dd	19
 	dd	1
 	align	4
-_585:
-	dd	_584
-	dd	20
+_622:
+	dd	_621
+	dd	21
 	dd	1
 	align	4
-_586:
-	dd	_584
-	dd	22
-	dd	1
-	align	4
-_587:
-	dd	_584
+_623:
+	dd	_621
 	dd	23
+	dd	1
+	align	4
+_624:
+	dd	_621
+	dd	24
 	dd	1
 	align	4
 _1:
@@ -9889,65 +10735,65 @@ _1:
 	dd	2147483647
 	dd	0
 	align	4
-_589:
-	dd	_584
-	dd	24
+_626:
+	dd	_621
+	dd	25
 	dd	2
 	align	4
-_83:
+_85:
 	dd	_bbStringClass
 	dd	2147483647
 	dd	2
 	dw	32,63
 	align	4
-_82:
+_84:
 	dd	_bbStringClass
 	dd	2147483647
 	dd	5
 	dw	69,120,105,116,32
 	align	4
-_593:
-	dd	_584
-	dd	30
+_630:
+	dd	_621
+	dd	31
 	dd	1
 	align	4
-_595:
+_632:
 	dd	0
 	align	4
-_597:
-	dd	_584
-	dd	32
+_634:
+	dd	_621
+	dd	33
 	dd	1
 	align	4
-_599:
-	dd	_584
-	dd	35
+_636:
+	dd	_621
+	dd	36
 	dd	1
 	align	4
-_601:
-	dd	_584
-	dd	38
+_638:
+	dd	_621
+	dd	39
 	dd	1
 	align	4
-_603:
-	dd	_584
-	dd	40
+_640:
+	dd	_621
+	dd	41
 	dd	1
 	align	4
-_605:
-	dd	_584
-	dd	42
+_642:
+	dd	_621
+	dd	43
 	dd	1
 	align	4
-_84:
+_86:
 	dd	_bbStringClass
 	dd	2147483647
 	dd	12
 	dw	115,116,97,114,116,95,115,99,114,101,101,110
 	align	4
-_608:
-	dd	_584
-	dd	43
+_645:
+	dd	_621
+	dd	44
 	dd	1
 	align	4
 _67:
@@ -9956,684 +10802,684 @@ _67:
 	dd	10
 	dw	103,97,109,101,95,119,111,114,108,100
 	align	4
-_611:
-	dd	_584
-	dd	44
+_648:
+	dd	_621
+	dd	45
 	dd	1
 	align	4
-_85:
+_87:
 	dd	_bbStringClass
 	dd	2147483647
 	dd	9
 	dw	119,105,110,95,119,111,114,108,100
 	align	4
-_614:
-	dd	_584
-	dd	45
+_651:
+	dd	_621
+	dd	46
 	dd	1
 	align	4
-_86:
+_79:
 	dd	_bbStringClass
 	dd	2147483647
 	dd	9
 	dw	103,97,109,101,95,111,118,101,114
 	align	4
-_617:
-	dd	_584
-	dd	47
+_654:
+	dd	_621
+	dd	48
 	dd	1
 	align	4
-_620:
-	dd	_584
-	dd	51
+_657:
+	dd	_621
+	dd	52
 	dd	1
-_636:
+_673:
 	db	"Self",0
 	align	4
-_635:
+_672:
 	dd	1
-	dd	_96
+	dd	_97
 	dd	2
-	dd	_636
-	dd	_115
+	dd	_673
+	dd	_116
 	dd	-4
 	dd	0
-_678:
+_715:
 	db	"FPS",0
-_679:
+_716:
 	db	"period",0
-_680:
+_717:
 	db	"time",0
-_681:
+_718:
 	db	"elapsed",0
 	align	4
-_677:
+_714:
 	dd	1
-	dd	_99
+	dd	_100
 	dd	2
-	dd	_636
-	dd	_115
+	dd	_673
+	dd	_116
 	dd	-4
 	dd	2
-	dd	_678
-	dd	_92
+	dd	_715
+	dd	_93
 	dd	-8
 	dd	2
-	dd	_679
-	dd	_92
+	dd	_716
+	dd	_93
 	dd	-12
 	dd	2
-	dd	_680
-	dd	_92
+	dd	_717
+	dd	_93
 	dd	-16
 	dd	2
-	dd	_681
-	dd	_92
+	dd	_718
+	dd	_93
 	dd	-20
 	dd	0
-_643:
+_680:
 	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/yengine.bmx",0
 	align	4
-_642:
-	dd	_643
+_679:
+	dd	_680
 	dd	17
 	dd	3
 	align	4
-_647:
-	dd	_643
+_684:
+	dd	_680
 	dd	18
 	dd	3
 	align	4
-_651:
-	dd	_643
+_688:
+	dd	_680
 	dd	20
 	dd	3
 	align	4
-_654:
-	dd	_643
-	dd	22
-	dd	3
-	align	4
-_659:
-	dd	_643
-	dd	23
-	dd	4
-	align	4
-_661:
-	dd	_643
-	dd	24
-	dd	3
-	align	4
-_663:
-	dd	_643
-	dd	25
-	dd	3
-	align	4
-_665:
-	dd	_643
-	dd	26
-	dd	3
-	align	4
-_666:
-	dd	_643
-	dd	30
-	dd	4
-	align	4
-_667:
-	dd	_643
-	dd	29
-	dd	5
-	align	4
-_669:
-	dd	_643
-	dd	32
-	dd	4
-	align	4
-_672:
-	dd	_643
-	dd	34
-	dd	4
-	align	4
-_673:
-	dd	_643
-	dd	35
-	dd	4
-	align	4
-_676:
-	dd	_643
-	dd	36
-	dd	4
-	align	4
 _691:
-	dd	1
-	dd	_100
-	dd	2
-	dd	_636
-	dd	_115
-	dd	-4
-	dd	0
-	align	4
-_682:
-	dd	_643
-	dd	45
-	dd	3
-	align	4
-_686:
-	dd	_643
-	dd	46
-	dd	4
-	align	4
-_701:
-	dd	1
-	dd	_101
-	dd	2
-	dd	_636
-	dd	_115
-	dd	-4
-	dd	0
-	align	4
-_692:
-	dd	_643
-	dd	53
+	dd	_680
+	dd	22
 	dd	3
 	align	4
 _696:
-	dd	_643
-	dd	54
+	dd	_680
+	dd	23
 	dd	4
+	align	4
+_698:
+	dd	_680
+	dd	24
+	dd	3
+	align	4
+_700:
+	dd	_680
+	dd	25
+	dd	3
 	align	4
 _702:
-	dd	1
-	dd	_102
-	dd	2
-	dd	_636
-	dd	_115
-	dd	-4
-	dd	0
-_725:
-	db	"w",0
-	align	4
-_724:
-	dd	1
-	dd	_103
-	dd	2
-	dd	_636
-	dd	_115
-	dd	-4
-	dd	2
-	dd	_725
-	dd	_90
-	dd	-8
-	dd	2
-	dd	_112
-	dd	_113
-	dd	-12
-	dd	0
+	dd	_680
+	dd	26
+	dd	3
 	align	4
 _703:
-	dd	_643
-	dd	70
-	dd	3
+	dd	_680
+	dd	30
+	dd	4
 	align	4
-_711:
-	dd	_643
-	dd	72
-	dd	3
+_704:
+	dd	_680
+	dd	29
+	dd	5
 	align	4
-_719:
-	dd	_643
-	dd	74
-	dd	3
-_792:
-	db	"wt",0
+_706:
+	dd	_680
+	dd	32
+	dd	4
 	align	4
-_791:
-	dd	1
-	dd	_105
-	dd	2
-	dd	_636
-	dd	_115
-	dd	-4
-	dd	2
-	dd	_112
-	dd	_113
-	dd	-8
-	dd	2
-	dd	_99
-	dd	_92
-	dd	-12
-	dd	2
-	dd	_725
-	dd	_90
-	dd	-16
-	dd	2
-	dd	_792
-	dd	_90
-	dd	-20
-	dd	0
+_709:
+	dd	_680
+	dd	34
+	dd	4
 	align	4
-_726:
-	dd	_643
-	dd	81
-	dd	3
+_710:
+	dd	_680
+	dd	35
+	dd	4
+	align	4
+_713:
+	dd	_680
+	dd	36
+	dd	4
 	align	4
 _728:
-	dd	_643
-	dd	84
-	dd	3
-	align	4
-_740:
-	dd	_643
-	dd	86
-	dd	4
-	align	4
-_744:
-	dd	_643
-	dd	88
-	dd	5
-	align	4
-_745:
-	dd	_643
-	dd	92
-	dd	5
-	align	4
-_747:
-	dd	_643
-	dd	92
-	dd	22
-	align	4
-_748:
-	dd	_643
-	dd	94
-	dd	3
-	align	4
-_752:
-	dd	_643
-	dd	95
-	dd	4
-	align	4
-_755:
-	dd	_643
-	dd	98
-	dd	3
-	align	4
-_759:
-	dd	_643
-	dd	98
-	dd	25
-	align	4
-_764:
-	dd	_643
-	dd	99
-	dd	1
-	align	4
-_775:
-	dd	_643
-	dd	100
-	dd	2
-	align	4
-_778:
-	dd	_643
-	dd	102
-	dd	3
-	align	4
-_786:
-	dd	_643
-	dd	104
-	dd	3
-	align	4
-_799:
-	dd	1
-	dd	_107
-	dd	0
-	align	4
-_793:
-	dd	_643
-	dd	110
-	dd	3
-	align	4
-_798:
-	dd	_643
-	dd	111
-	dd	3
-	align	4
-_803:
-	dd	1
-	dd	_96
-	dd	2
-	dd	_636
-	dd	_90
-	dd	-4
-	dd	0
-	align	4
-_822:
-	dd	1
-	dd	_99
-	dd	2
-	dd	_636
-	dd	_90
-	dd	-4
-	dd	0
-	align	4
-_811:
-	dd	_643
-	dd	124
-	dd	3
-	align	4
-_814:
-	dd	_643
-	dd	125
-	dd	3
-_839:
-	db	"e",0
-	align	4
-_838:
-	dd	1
-	dd	_100
-	dd	2
-	dd	_636
-	dd	_90
-	dd	-4
-	dd	2
-	dd	_839
-	dd	_179
-	dd	-8
-	dd	0
-	align	4
-_823:
-	dd	_643
-	dd	130
-	dd	3
-	align	4
-_835:
-	dd	_643
-	dd	131
-	dd	4
-	align	4
-_840:
 	dd	1
 	dd	_101
 	dd	2
-	dd	_636
-	dd	_90
+	dd	_673
+	dd	_116
 	dd	-4
 	dd	0
 	align	4
-_856:
+_719:
+	dd	_680
+	dd	45
+	dd	3
+	align	4
+_723:
+	dd	_680
+	dd	46
+	dd	4
+	align	4
+_738:
 	dd	1
 	dd	_102
 	dd	2
-	dd	_636
-	dd	_90
-	dd	-4
-	dd	2
-	dd	_839
-	dd	_179
-	dd	-8
-	dd	0
-	align	4
-_841:
-	dd	_643
-	dd	142
-	dd	3
-	align	4
-_853:
-	dd	_643
-	dd	143
-	dd	4
-	align	4
-_873:
-	dd	1
+	dd	_673
 	dd	_116
-	dd	2
-	dd	_636
-	dd	_90
 	dd	-4
-	dd	2
-	dd	_839
-	dd	_179
-	dd	-8
 	dd	0
 	align	4
-_857:
-	dd	_643
-	dd	150
-	dd	4
-	align	4
-_865:
-	dd	_643
-	dd	151
-	dd	4
-	align	4
-_868:
-	dd	_643
-	dd	153
-	dd	4
-	align	4
-_882:
-	dd	1
-	dd	_118
-	dd	2
-	dd	_636
-	dd	_90
-	dd	-4
-	dd	2
-	dd	_839
-	dd	_179
-	dd	-8
-	dd	0
-	align	4
-_874:
-	dd	_643
-	dd	158
-	dd	4
-	align	4
-_877:
-	dd	_643
-	dd	159
-	dd	4
-	align	4
-_898:
-	dd	1
-	dd	_119
-	dd	2
-	dd	_636
-	dd	_90
-	dd	-4
-	dd	2
-	dd	_839
-	dd	_179
-	dd	-8
-	dd	0
-	align	4
-_883:
-	dd	_643
-	dd	164
+_729:
+	dd	_680
+	dd	53
 	dd	3
 	align	4
-_895:
-	dd	_643
-	dd	165
+_733:
+	dd	_680
+	dd	54
 	dd	4
 	align	4
-_918:
+_739:
 	dd	1
-	dd	_120
+	dd	_103
 	dd	2
-	dd	_636
-	dd	_90
-	dd	-4
-	dd	2
-	dd	_839
-	dd	_179
-	dd	-8
-	dd	0
-	align	4
-_899:
-	dd	_643
-	dd	171
-	dd	3
-	align	4
-_911:
-	dd	_643
-	dd	172
-	dd	4
-	align	4
-_915:
-	dd	_643
-	dd	173
-	dd	5
-	align	4
-_938:
-	dd	1
-	dd	_121
-	dd	2
-	dd	_636
-	dd	_90
-	dd	-4
-	dd	2
-	dd	_839
-	dd	_179
-	dd	-8
-	dd	0
-	align	4
-_919:
-	dd	_643
-	dd	180
-	dd	3
-	align	4
-_931:
-	dd	_643
-	dd	181
-	dd	4
-	align	4
-_935:
-	dd	_643
-	dd	182
-	dd	5
-_951:
-	db	"yw",0
-	align	4
-_950:
-	dd	1
-	dd	_107
-	dd	2
-	dd	_951
-	dd	_90
+	dd	_673
+	dd	_116
 	dd	-4
 	dd	0
+_762:
+	db	"w",0
 	align	4
-_939:
-	dd	_643
-	dd	189
-	dd	3
-	align	4
-_941:
-	dd	_643
-	dd	190
-	dd	3
-	align	4
-_949:
-	dd	_643
-	dd	193
-	dd	3
-_953:
-	db	":tstw",0
-	align	4
-_952:
+_761:
 	dd	1
-	dd	_96
+	dd	_104
 	dd	2
-	dd	_636
-	dd	_953
-	dd	-4
-	dd	0
-	align	4
-_956:
-	dd	1
-	dd	_100
-	dd	2
-	dd	_636
-	dd	_953
-	dd	-4
-	dd	0
-	align	4
-_955:
-	dd	_643
-	dd	205
-	dd	3
-_969:
-	db	"c",0
-_970:
-	db	"ct",0
-	align	4
-_968:
-	dd	1
-	dd	_99
-	dd	2
-	dd	_636
-	dd	_953
+	dd	_673
+	dd	_116
 	dd	-4
 	dd	2
-	dd	_969
-	dd	_92
+	dd	_762
+	dd	_91
 	dd	-8
 	dd	2
-	dd	_970
-	dd	_92
+	dd	_113
+	dd	_114
 	dd	-12
 	dd	0
 	align	4
-_957:
-	dd	_643
-	dd	211
+_740:
+	dd	_680
+	dd	70
 	dd	3
 	align	4
-_958:
-	dd	_643
-	dd	212
+_748:
+	dd	_680
+	dd	72
 	dd	3
 	align	4
-_960:
-	dd	_643
-	dd	213
+_756:
+	dd	_680
+	dd	74
 	dd	3
+_829:
+	db	"wt",0
 	align	4
-_963:
-	dd	_643
-	dd	215
-	dd	3
-	align	4
-_965:
-	dd	_643
-	dd	216
-	dd	3
-	align	4
-_974:
+_828:
 	dd	1
-	dd	_107
+	dd	_106
 	dd	2
-	dd	_627
-	dd	_953
+	dd	_673
+	dd	_116
+	dd	-4
+	dd	2
+	dd	_113
+	dd	_114
+	dd	-8
+	dd	2
+	dd	_100
+	dd	_93
+	dd	-12
+	dd	2
+	dd	_762
+	dd	_91
+	dd	-16
+	dd	2
+	dd	_829
+	dd	_91
+	dd	-20
+	dd	0
+	align	4
+_763:
+	dd	_680
+	dd	81
+	dd	3
+	align	4
+_765:
+	dd	_680
+	dd	84
+	dd	3
+	align	4
+_777:
+	dd	_680
+	dd	86
+	dd	4
+	align	4
+_781:
+	dd	_680
+	dd	88
+	dd	5
+	align	4
+_782:
+	dd	_680
+	dd	92
+	dd	5
+	align	4
+_784:
+	dd	_680
+	dd	92
+	dd	22
+	align	4
+_785:
+	dd	_680
+	dd	94
+	dd	3
+	align	4
+_789:
+	dd	_680
+	dd	95
+	dd	4
+	align	4
+_792:
+	dd	_680
+	dd	98
+	dd	3
+	align	4
+_796:
+	dd	_680
+	dd	98
+	dd	25
+	align	4
+_801:
+	dd	_680
+	dd	99
+	dd	1
+	align	4
+_812:
+	dd	_680
+	dd	100
+	dd	2
+	align	4
+_815:
+	dd	_680
+	dd	102
+	dd	3
+	align	4
+_823:
+	dd	_680
+	dd	104
+	dd	3
+	align	4
+_836:
+	dd	1
+	dd	_108
+	dd	0
+	align	4
+_830:
+	dd	_680
+	dd	110
+	dd	3
+	align	4
+_835:
+	dd	_680
+	dd	111
+	dd	3
+	align	4
+_840:
+	dd	1
+	dd	_97
+	dd	2
+	dd	_673
+	dd	_91
 	dd	-4
 	dd	0
 	align	4
-_971:
-	dd	_643
-	dd	222
+_859:
+	dd	1
+	dd	_100
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	0
+	align	4
+_848:
+	dd	_680
+	dd	124
 	dd	3
 	align	4
-_973:
-	dd	_643
-	dd	225
+_851:
+	dd	_680
+	dd	125
+	dd	3
+_876:
+	db	"e",0
+	align	4
+_875:
+	dd	1
+	dd	_101
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	2
+	dd	_876
+	dd	_180
+	dd	-8
+	dd	0
+	align	4
+_860:
+	dd	_680
+	dd	130
+	dd	3
+	align	4
+_872:
+	dd	_680
+	dd	131
+	dd	4
+	align	4
+_877:
+	dd	1
+	dd	_102
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	0
+	align	4
+_893:
+	dd	1
+	dd	_103
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	2
+	dd	_876
+	dd	_180
+	dd	-8
+	dd	0
+	align	4
+_878:
+	dd	_680
+	dd	142
+	dd	3
+	align	4
+_890:
+	dd	_680
+	dd	143
+	dd	4
+	align	4
+_910:
+	dd	1
+	dd	_117
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	2
+	dd	_876
+	dd	_180
+	dd	-8
+	dd	0
+	align	4
+_894:
+	dd	_680
+	dd	150
+	dd	4
+	align	4
+_902:
+	dd	_680
+	dd	151
+	dd	4
+	align	4
+_905:
+	dd	_680
+	dd	153
+	dd	4
+	align	4
+_919:
+	dd	1
+	dd	_119
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	2
+	dd	_876
+	dd	_180
+	dd	-8
+	dd	0
+	align	4
+_911:
+	dd	_680
+	dd	158
+	dd	4
+	align	4
+_914:
+	dd	_680
+	dd	159
+	dd	4
+	align	4
+_935:
+	dd	1
+	dd	_120
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	2
+	dd	_876
+	dd	_180
+	dd	-8
+	dd	0
+	align	4
+_920:
+	dd	_680
+	dd	164
+	dd	3
+	align	4
+_932:
+	dd	_680
+	dd	165
+	dd	4
+	align	4
+_955:
+	dd	1
+	dd	_121
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	2
+	dd	_876
+	dd	_180
+	dd	-8
+	dd	0
+	align	4
+_936:
+	dd	_680
+	dd	171
+	dd	3
+	align	4
+_948:
+	dd	_680
+	dd	172
+	dd	4
+	align	4
+_952:
+	dd	_680
+	dd	173
+	dd	5
+	align	4
+_975:
+	dd	1
+	dd	_122
+	dd	2
+	dd	_673
+	dd	_91
+	dd	-4
+	dd	2
+	dd	_876
+	dd	_180
+	dd	-8
+	dd	0
+	align	4
+_956:
+	dd	_680
+	dd	180
+	dd	3
+	align	4
+_968:
+	dd	_680
+	dd	181
+	dd	4
+	align	4
+_972:
+	dd	_680
+	dd	182
+	dd	5
+_988:
+	db	"yw",0
+	align	4
+_987:
+	dd	1
+	dd	_108
+	dd	2
+	dd	_988
+	dd	_91
+	dd	-4
+	dd	0
+	align	4
+_976:
+	dd	_680
+	dd	189
 	dd	3
 	align	4
 _978:
+	dd	_680
+	dd	190
+	dd	3
+	align	4
+_986:
+	dd	_680
+	dd	193
+	dd	3
+_990:
+	db	":tstw",0
+	align	4
+_989:
 	dd	1
-	dd	_96
+	dd	_97
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_990
+	dd	-4
+	dd	0
+	align	4
+_993:
+	dd	1
+	dd	_101
+	dd	2
+	dd	_673
+	dd	_990
+	dd	-4
+	dd	0
+	align	4
+_992:
+	dd	_680
+	dd	205
+	dd	3
+_1006:
+	db	"c",0
+_1007:
+	db	"ct",0
+	align	4
+_1005:
+	dd	1
+	dd	_100
+	dd	2
+	dd	_673
+	dd	_990
+	dd	-4
+	dd	2
+	dd	_1006
+	dd	_93
+	dd	-8
+	dd	2
+	dd	_1007
+	dd	_93
+	dd	-12
+	dd	0
+	align	4
+_994:
+	dd	_680
+	dd	211
+	dd	3
+	align	4
+_995:
+	dd	_680
+	dd	212
+	dd	3
+	align	4
+_997:
+	dd	_680
+	dd	213
+	dd	3
+	align	4
+_1000:
+	dd	_680
+	dd	215
+	dd	3
+	align	4
+_1002:
+	dd	_680
+	dd	216
+	dd	3
+	align	4
+_1011:
+	dd	1
+	dd	_108
+	dd	2
+	dd	_664
+	dd	_990
+	dd	-4
+	dd	0
+	align	4
+_1008:
+	dd	_680
+	dd	222
+	dd	3
+	align	4
+_1010:
+	dd	_680
+	dd	225
+	dd	3
+	align	4
+_1015:
+	dd	1
+	dd	_97
+	dd	2
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	0
 	align	4
@@ -10643,496 +11489,496 @@ _49:
 	dd	6
 	dw	101,110,116,105,116,121
 	align	4
-_2483:
+_2687:
 	dd	0x40000000
 	align	4
-_1007:
-	dd	1
-	dd	_99
-	dd	2
-	dd	_636
-	dd	_179
-	dd	-4
-	dd	0
-	align	4
-_986:
-	dd	_643
-	dd	240
-	dd	3
-	align	4
-_990:
-	dd	_643
-	dd	241
-	dd	3
-	align	4
-_999:
-	dd	_643
-	dd	243
-	dd	3
-	align	4
-_1031:
+_1044:
 	dd	1
 	dd	_100
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	0
 	align	4
-_1008:
-	dd	_643
+_1023:
+	dd	_680
+	dd	240
+	dd	3
+	align	4
+_1027:
+	dd	_680
+	dd	241
+	dd	3
+	align	4
+_1036:
+	dd	_680
+	dd	243
+	dd	3
+	align	4
+_1068:
+	dd	1
+	dd	_101
+	dd	2
+	dd	_673
+	dd	_180
+	dd	-4
+	dd	0
+	align	4
+_1045:
+	dd	_680
 	dd	251
 	dd	3
 	align	4
-_1012:
-	dd	_643
+_1049:
+	dd	_680
 	dd	251
 	dd	25
 	align	4
-_1013:
-	dd	_643
+_1050:
+	dd	_680
 	dd	253
 	dd	6
 	align	4
-_1019:
-	dd	_643
+_1056:
+	dd	_680
 	dd	254
 	dd	3
 	align	4
-_1025:
-	dd	_643
+_1062:
+	dd	_680
 	dd	255
 	dd	3
 	align	4
-_1032:
+_1069:
 	dd	1
-	dd	_102
+	dd	_103
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	0
-_1041:
+_1078:
 	db	"mx",0
-_1042:
+_1079:
 	db	"my",0
-_1043:
+_1080:
 	db	"mz",0
 	align	4
-_1040:
+_1077:
 	dd	1
-	dd	_139
+	dd	_140
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	2
-	dd	_1041
-	dd	_129
+	dd	_1078
+	dd	_130
 	dd	-8
 	dd	2
-	dd	_1042
-	dd	_129
+	dd	_1079
+	dd	_130
 	dd	-12
 	dd	2
-	dd	_1043
-	dd	_129
+	dd	_1080
+	dd	_130
 	dd	-16
 	dd	0
 	align	4
-_1033:
-	dd	_643
+_1070:
+	dd	_680
 	dd	277
 	dd	3
 	align	4
-_1037:
-	dd	_643
+_1074:
+	dd	_680
 	dd	277
 	dd	23
 	align	4
-_1047:
-	dd	1
-	dd	_141
-	dd	2
-	dd	_636
-	dd	_179
-	dd	-4
-	dd	2
-	dd	_1041
-	dd	_129
-	dd	-8
-	dd	2
-	dd	_1042
-	dd	_129
-	dd	-12
-	dd	2
-	dd	_1043
-	dd	_129
-	dd	-16
-	dd	0
-	align	4
-_1044:
-	dd	_643
-	dd	286
-	dd	3
-_1073:
-	db	"stype",0
-_1074:
-	db	"ret",0
-	align	4
-_1072:
+_1084:
 	dd	1
 	dd	_142
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	2
-	dd	_1073
-	dd	_113
+	dd	_1078
+	dd	_130
 	dd	-8
 	dd	2
-	dd	_1074
-	dd	_95
+	dd	_1079
+	dd	_130
 	dd	-12
 	dd	2
-	dd	_839
-	dd	_179
+	dd	_1080
+	dd	_130
 	dd	-16
 	dd	0
 	align	4
-_1048:
-	dd	_643
+_1081:
+	dd	_680
+	dd	286
+	dd	3
+_1110:
+	db	"stype",0
+_1111:
+	db	"ret",0
+	align	4
+_1109:
+	dd	1
+	dd	_143
+	dd	2
+	dd	_673
+	dd	_180
+	dd	-4
+	dd	2
+	dd	_1110
+	dd	_114
+	dd	-8
+	dd	2
+	dd	_1111
+	dd	_96
+	dd	-12
+	dd	2
+	dd	_876
+	dd	_180
+	dd	-16
+	dd	0
+	align	4
+_1085:
+	dd	_680
 	dd	292
 	dd	3
 	align	4
-_1050:
-	dd	_643
+_1087:
+	dd	_680
 	dd	294
 	dd	3
 	align	4
-_1064:
-	dd	_643
+_1101:
+	dd	_680
 	dd	295
 	dd	4
 	align	4
-_1068:
-	dd	_643
+_1105:
+	dd	_680
 	dd	296
 	dd	5
 	align	4
-_1071:
-	dd	_643
+_1108:
+	dd	_680
 	dd	299
 	dd	3
-_1116:
+_1153:
 	db	"dist",0
-_1117:
+_1154:
 	db	"es",0
 	align	4
-_1115:
+_1152:
 	dd	1
-	dd	_144
+	dd	_145
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	2
-	dd	_1073
-	dd	_113
+	dd	_1110
+	dd	_114
 	dd	-8
 	dd	2
-	dd	_1041
-	dd	_129
+	dd	_1078
+	dd	_130
 	dd	-12
 	dd	2
-	dd	_1042
-	dd	_129
+	dd	_1079
+	dd	_130
 	dd	-16
 	dd	2
-	dd	_1043
-	dd	_129
+	dd	_1080
+	dd	_130
 	dd	-20
 	dd	2
-	dd	_1116
-	dd	_129
+	dd	_1153
+	dd	_130
 	dd	-24
 	dd	2
-	dd	_627
-	dd	_92
+	dd	_664
+	dd	_93
 	dd	-28
 	dd	2
-	dd	_1117
-	dd	_95
+	dd	_1154
+	dd	_96
 	dd	-32
 	dd	2
-	dd	_839
-	dd	_179
+	dd	_876
+	dd	_180
 	dd	-36
 	dd	0
 	align	4
-_1075:
-	dd	_643
+_1112:
+	dd	_680
 	dd	304
 	dd	3
 	align	4
-_1077:
-	dd	_643
+_1114:
+	dd	_680
 	dd	306
 	dd	3
 	align	4
-_1081:
-	dd	_643
+_1118:
+	dd	_680
 	dd	307
 	dd	3
 	align	4
-_1082:
-	dd	_643
+_1119:
+	dd	_680
 	dd	308
 	dd	3
 	align	4
-_1086:
-	dd	_643
+_1123:
+	dd	_680
 	dd	310
 	dd	3
 	align	4
-_1096:
-	dd	_643
+_1133:
+	dd	_680
 	dd	311
 	dd	4
 	align	4
-_1099:
-	dd	_643
+_1136:
+	dd	_680
 	dd	312
 	dd	4
 	align	4
-_1105:
-	dd	_643
+_1142:
+	dd	_680
 	dd	313
 	dd	5
 	align	4
-_1106:
-	dd	_643
+_1143:
+	dd	_680
 	dd	314
 	dd	5
 	align	4
-_1109:
-	dd	_643
+_1146:
+	dd	_680
 	dd	315
 	dd	5
 	align	4
-_1110:
-	dd	_643
+_1147:
+	dd	_680
 	dd	318
 	dd	3
 	align	4
-_1111:
-	dd	_643
+_1148:
+	dd	_680
 	dd	319
 	dd	3
 	align	4
-_1114:
-	dd	_643
+_1151:
+	dd	_680
 	dd	320
 	dd	3
 	align	4
-_1125:
+_1162:
 	dd	1
-	dd	_118
+	dd	_119
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	0
 	align	4
-_1118:
-	dd	_643
+_1155:
+	dd	_680
 	dd	326
 	dd	3
 	align	4
-_1121:
-	dd	_643
+_1158:
+	dd	_680
 	dd	327
 	dd	3
-_1137:
+_1174:
 	db	"is",0
 	align	4
-_1136:
+_1173:
 	dd	1
-	dd	_146
+	dd	_147
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	2
-	dd	_1137
-	dd	_92
+	dd	_1174
+	dd	_93
 	dd	-8
 	dd	0
-	align	4
-_1126:
-	dd	_643
-	dd	335
-	dd	3
-	align	4
-_1128:
-	dd	_643
-	dd	335
-	dd	18
-	align	4
-_1131:
-	dd	_643
-	dd	336
-	dd	3
-	align	4
-_1133:
-	dd	_643
-	dd	336
-	dd	18
-_1142:
-	db	"a",0
-	align	4
-_1141:
-	dd	1
-	dd	_148
-	dd	2
-	dd	_636
-	dd	_179
-	dd	-4
-	dd	2
-	dd	_1142
-	dd	_129
-	dd	-8
-	dd	0
-	align	4
-_1138:
-	dd	_643
-	dd	343
-	dd	3
-_1144:
-	db	"s",0
-	align	4
-_1143:
-	dd	1
-	dd	_150
-	dd	2
-	dd	_636
-	dd	_179
-	dd	-4
-	dd	2
-	dd	_1144
-	dd	_129
-	dd	-8
-	dd	0
-_1165:
-	db	"mb",0
-_1166:
-	db	"picked",0
-	align	4
-_1164:
-	dd	1
-	dd	_151
-	dd	2
-	dd	_636
-	dd	_179
-	dd	-4
-	dd	2
-	dd	_1165
-	dd	_92
-	dd	-8
-	dd	2
-	dd	_1166
-	dd	_92
-	dd	-12
-	dd	0
-	align	4
-_1145:
-	dd	_643
-	dd	355
-	dd	3
-	align	4
-_1148:
-	dd	_643
-	dd	356
-	dd	3
-	align	4
-_1150:
-	dd	_643
-	dd	357
-	dd	4
-	align	4
-_1158:
-	dd	_643
-	dd	359
-	dd	4
-	align	4
-_1162:
-	dd	_643
-	dd	360
-	dd	5
 	align	4
 _1163:
-	dd	_643
-	dd	363
+	dd	_680
+	dd	335
+	dd	3
+	align	4
+_1165:
+	dd	_680
+	dd	335
+	dd	18
+	align	4
+_1168:
+	dd	_680
+	dd	336
 	dd	3
 	align	4
 _1170:
-	dd	1
-	dd	_152
-	dd	2
-	dd	_636
-	dd	_179
-	dd	-4
-	dd	2
-	dd	_1041
-	dd	_129
-	dd	-8
-	dd	2
-	dd	_1042
-	dd	_129
-	dd	-12
-	dd	2
-	dd	_1043
-	dd	_129
-	dd	-16
-	dd	0
-	align	4
-_1167:
-	dd	_643
-	dd	371
-	dd	3
+	dd	_680
+	dd	336
+	dd	18
 _1179:
-	db	"v",0
+	db	"a",0
 	align	4
 _1178:
 	dd	1
-	dd	_153
+	dd	_149
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	2
 	dd	_1179
-	dd	_129
+	dd	_130
 	dd	-8
 	dd	0
 	align	4
-_1171:
-	dd	_643
-	dd	376
+_1175:
+	dd	_680
+	dd	343
+	dd	3
+_1181:
+	db	"s",0
+	align	4
+_1180:
+	dd	1
+	dd	_151
+	dd	2
+	dd	_673
+	dd	_180
+	dd	-4
+	dd	2
+	dd	_1181
+	dd	_130
+	dd	-8
+	dd	0
+_1202:
+	db	"mb",0
+_1203:
+	db	"picked",0
+	align	4
+_1201:
+	dd	1
+	dd	_152
+	dd	2
+	dd	_673
+	dd	_180
+	dd	-4
+	dd	2
+	dd	_1202
+	dd	_93
+	dd	-8
+	dd	2
+	dd	_1203
+	dd	_93
+	dd	-12
+	dd	0
+	align	4
+_1182:
+	dd	_680
+	dd	355
 	dd	3
 	align	4
-_1189:
+_1185:
+	dd	_680
+	dd	356
+	dd	3
+	align	4
+_1187:
+	dd	_680
+	dd	357
+	dd	4
+	align	4
+_1195:
+	dd	_680
+	dd	359
+	dd	4
+	align	4
+_1199:
+	dd	_680
+	dd	360
+	dd	5
+	align	4
+_1200:
+	dd	_680
+	dd	363
+	dd	3
+	align	4
+_1207:
+	dd	1
+	dd	_153
+	dd	2
+	dd	_673
+	dd	_180
+	dd	-4
+	dd	2
+	dd	_1078
+	dd	_130
+	dd	-8
+	dd	2
+	dd	_1079
+	dd	_130
+	dd	-12
+	dd	2
+	dd	_1080
+	dd	_130
+	dd	-16
+	dd	0
+	align	4
+_1204:
+	dd	_680
+	dd	371
+	dd	3
+_1216:
+	db	"v",0
+	align	4
+_1215:
 	dd	1
 	dd	_154
 	dd	2
-	dd	_636
-	dd	_179
+	dd	_673
+	dd	_180
+	dd	-4
+	dd	2
+	dd	_1216
+	dd	_130
+	dd	-8
+	dd	0
+	align	4
+_1208:
+	dd	_680
+	dd	376
+	dd	3
+	align	4
+_1226:
+	dd	1
+	dd	_155
+	dd	2
+	dd	_673
+	dd	_180
 	dd	-4
 	dd	0
 	align	4
-_1180:
-	dd	_643
+_1217:
+	dd	_680
 	dd	382
 	dd	4
 	align	4
@@ -11142,8 +11988,8 @@ _56:
 	dd	2
 	dw	120,101
 	align	4
-_1183:
-	dd	_643
+_1220:
+	dd	_680
 	dd	383
 	dd	3
 	align	4
@@ -11153,8 +11999,8 @@ _57:
 	dd	2
 	dw	121,101
 	align	4
-_1186:
-	dd	_643
+_1223:
+	dd	_680
 	dd	384
 	dd	3
 	align	4
@@ -11164,229 +12010,229 @@ _58:
 	dd	2
 	dw	122,101
 	align	4
-_1221:
+_1258:
 	dd	1
-	dd	_107
+	dd	_108
 	dd	2
-	dd	_128
 	dd	_129
+	dd	_130
 	dd	-4
 	dd	2
+	dd	_131
 	dd	_130
-	dd	_129
 	dd	-8
 	dd	2
-	dd	_131
-	dd	_129
+	dd	_132
+	dd	_130
 	dd	-12
 	dd	2
-	dd	_133
-	dd	_92
+	dd	_134
+	dd	_93
 	dd	-16
 	dd	2
-	dd	_132
-	dd	_129
+	dd	_133
+	dd	_130
 	dd	-20
 	dd	2
-	dd	_839
-	dd	_179
+	dd	_876
+	dd	_180
 	dd	-24
 	dd	0
 	align	4
-_1190:
-	dd	_643
+_1227:
+	dd	_680
 	dd	390
 	dd	3
 	align	4
-_1192:
-	dd	_643
+_1229:
+	dd	_680
 	dd	391
 	dd	3
 	align	4
-_1196:
-	dd	_643
+_1233:
+	dd	_680
 	dd	392
 	dd	3
 	align	4
-_1200:
-	dd	_643
+_1237:
+	dd	_680
 	dd	393
 	dd	3
 	align	4
-_1204:
-	dd	_643
+_1241:
+	dd	_680
 	dd	394
 	dd	3
 	align	4
-_1208:
-	dd	_643
+_1245:
+	dd	_680
 	dd	395
 	dd	3
 	align	4
-_1212:
-	dd	_643
+_1249:
+	dd	_680
 	dd	396
 	dd	3
 	align	4
-_1220:
-	dd	_643
+_1257:
+	dd	_680
 	dd	397
 	dd	3
 	align	4
-_1222:
-	dd	1
-	dd	_96
-	dd	2
-	dd	_636
-	dd	_138
-	dd	-4
-	dd	0
-	align	4
-_1251:
-	dd	1
-	dd	_161
-	dd	2
-	dd	_636
-	dd	_138
-	dd	-4
-	dd	0
-	align	4
-_1224:
-	dd	_643
-	dd	409
-	dd	3
-	align	4
-_1228:
-	dd	_643
-	dd	410
-	dd	3
-	align	4
-_1234:
-	dd	_643
-	dd	411
-	dd	3
-	align	4
-_1240:
-	dd	_643
-	dd	412
-	dd	4
-	align	4
-_1244:
-	dd	_643
-	dd	413
-	dd	4
-	align	4
-_1248:
-	dd	_643
-	dd	415
-	dd	3
-_1269:
-	db	"max_count2",0
-_1270:
-	db	"t",0
-	align	4
-_1268:
-	dd	1
-	dd	_107
-	dd	2
-	dd	_1269
-	dd	_92
-	dd	-4
-	dd	2
-	dd	_1270
-	dd	_138
-	dd	-8
-	dd	0
-	align	4
-_1252:
-	dd	_643
-	dd	421
-	dd	3
-	align	4
-_1254:
-	dd	_643
-	dd	422
-	dd	3
-	align	4
-_1255:
-	dd	_643
-	dd	423
-	dd	3
-	align	4
 _1259:
-	dd	_643
-	dd	424
-	dd	3
-	align	4
-_1263:
-	dd	_643
-	dd	425
-	dd	3
-	align	4
-_1267:
-	dd	_643
-	dd	427
-	dd	3
-_1289:
-	db	"ycount_filis_in_dir",0
-_1290:
-	db	"dirn",0
-_1291:
-	db	"dir",0
+	dd	1
+	dd	_97
+	dd	2
+	dd	_673
+	dd	_139
+	dd	-4
+	dd	0
 	align	4
 _1288:
 	dd	1
-	dd	_1289
+	dd	_162
 	dd	2
-	dd	_1290
-	dd	_113
+	dd	_673
+	dd	_139
+	dd	-4
+	dd	0
+	align	4
+_1261:
+	dd	_680
+	dd	409
+	dd	3
+	align	4
+_1265:
+	dd	_680
+	dd	410
+	dd	3
+	align	4
+_1271:
+	dd	_680
+	dd	411
+	dd	3
+	align	4
+_1277:
+	dd	_680
+	dd	412
+	dd	4
+	align	4
+_1281:
+	dd	_680
+	dd	413
+	dd	4
+	align	4
+_1285:
+	dd	_680
+	dd	415
+	dd	3
+_1306:
+	db	"max_count2",0
+_1307:
+	db	"t",0
+	align	4
+_1305:
+	dd	1
+	dd	_108
+	dd	2
+	dd	_1306
+	dd	_93
 	dd	-4
 	dd	2
-	dd	_1291
-	dd	_92
+	dd	_1307
+	dd	_139
+	dd	-8
+	dd	0
+	align	4
+_1289:
+	dd	_680
+	dd	421
+	dd	3
+	align	4
+_1291:
+	dd	_680
+	dd	422
+	dd	3
+	align	4
+_1292:
+	dd	_680
+	dd	423
+	dd	3
+	align	4
+_1296:
+	dd	_680
+	dd	424
+	dd	3
+	align	4
+_1300:
+	dd	_680
+	dd	425
+	dd	3
+	align	4
+_1304:
+	dd	_680
+	dd	427
+	dd	3
+_1326:
+	db	"ycount_filis_in_dir",0
+_1327:
+	db	"dirn",0
+_1328:
+	db	"dir",0
+	align	4
+_1325:
+	dd	1
+	dd	_1326
+	dd	2
+	dd	_1327
+	dd	_114
+	dd	-4
+	dd	2
+	dd	_1328
+	dd	_93
 	dd	-8
 	dd	2
-	dd	_969
-	dd	_92
+	dd	_1006
+	dd	_93
 	dd	-12
 	dd	2
-	dd	_1270
-	dd	_113
+	dd	_1307
+	dd	_114
 	dd	-16
 	dd	0
 	align	4
-_1271:
-	dd	_643
+_1308:
+	dd	_680
 	dd	438
 	dd	2
 	align	4
-_1273:
-	dd	_643
+_1310:
+	dd	_680
 	dd	440
 	dd	2
 	align	4
-_1275:
-	dd	_643
+_1312:
+	dd	_680
 	dd	448
 	dd	2
 	align	4
-_1276:
-	dd	_643
+_1313:
+	dd	_680
 	dd	443
 	dd	3
 	align	4
-_1278:
-	dd	_643
+_1315:
+	dd	_680
 	dd	444
 	dd	3
 	align	4
-_1280:
-	dd	_643
+_1317:
+	dd	_680
 	dd	444
 	dd	13
 	align	4
-_1281:
-	dd	_643
+_1318:
+	dd	_680
 	dd	445
 	dd	3
 	align	4
@@ -11402,211 +12248,219 @@ _63:
 	dd	2
 	dw	46,46
 	align	4
-_1285:
-	dd	_643
+_1322:
+	dd	_680
 	dd	445
 	dd	26
 	align	4
-_1286:
-	dd	_643
+_1323:
+	dd	_680
 	dd	447
 	dd	3
 	align	4
-_1287:
-	dd	_643
+_1324:
+	dd	_680
 	dd	452
 	dd	2
-_1302:
+_1339:
 	db	"ysign",0
-_1303:
+_1340:
 	db	"n",0
 	align	4
-_1301:
+_1338:
 	dd	1
-	dd	_1302
+	dd	_1339
 	dd	2
-	dd	_1303
-	dd	_92
+	dd	_1340
+	dd	_93
 	dd	-4
 	dd	0
 	align	4
-_1292:
-	dd	_643
+_1329:
+	dd	_680
 	dd	458
 	dd	2
 	align	4
-_1294:
-	dd	_643
+_1331:
+	dd	_680
 	dd	458
 	dd	16
 	align	4
-_1295:
-	dd	_643
+_1332:
+	dd	_680
 	dd	459
 	dd	2
 	align	4
-_1297:
-	dd	_643
+_1334:
+	dd	_680
 	dd	459
 	dd	16
 	align	4
-_1298:
-	dd	_643
+_1335:
+	dd	_680
 	dd	460
 	dd	2
 	align	4
-_1300:
-	dd	_643
+_1337:
+	dd	_680
 	dd	460
 	dd	16
-_1314:
+_1351:
 	db	"ylabs",0
 	align	4
-_1313:
+_1350:
 	dd	1
-	dd	_1314
+	dd	_1351
 	dd	2
-	dd	_1303
-	dd	_92
+	dd	_1340
+	dd	_93
 	dd	-4
 	dd	0
 	align	4
-_1304:
-	dd	_643
+_1341:
+	dd	_680
 	dd	467
 	dd	2
 	align	4
-_1306:
-	dd	_643
+_1343:
+	dd	_680
 	dd	467
 	dd	16
 	align	4
-_1307:
-	dd	_643
+_1344:
+	dd	_680
 	dd	468
 	dd	2
 	align	4
-_1309:
-	dd	_643
+_1346:
+	dd	_680
 	dd	468
 	dd	16
 	align	4
-_1310:
-	dd	_643
+_1347:
+	dd	_680
 	dd	469
 	dd	2
 	align	4
-_1312:
-	dd	_643
+_1349:
+	dd	_680
 	dd	469
 	dd	16
-_1319:
+_1356:
 	db	"kd",0
-_1320:
+_1357:
 	db	"key",0
 	align	4
-_1318:
+_1355:
 	dd	1
-	dd	_1319
+	dd	_1356
 	dd	2
-	dd	_1320
-	dd	_92
+	dd	_1357
+	dd	_93
 	dd	-4
 	dd	0
 	align	4
-_1315:
-	dd	_643
+_1352:
+	dd	_680
 	dd	476
 	dd	2
 	align	4
-_1317:
-	dd	_643
+_1354:
+	dd	_680
 	dd	476
 	dd	27
 	align	4
-_1322:
+_1359:
 	dd	1
-	dd	_96
+	dd	_97
 	dd	2
-	dd	_636
-	dd	_628
+	dd	_673
+	dd	_665
 	dd	-4
 	dd	0
 	align	4
-_1328:
-	dd	1
-	dd	_100
-	dd	2
-	dd	_636
-	dd	_628
-	dd	-4
-	dd	0
-_1327:
-	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/game_world.bmx",0
-	align	4
-_1326:
-	dd	_1327
-	dd	14
-	dd	3
-	align	4
-_1329:
+_1365:
 	dd	1
 	dd	_101
 	dd	2
-	dd	_636
-	dd	_628
+	dd	_673
+	dd	_665
 	dd	-4
 	dd	0
-_1369:
-	db	"skybox",0
-_1370:
-	db	"clouds",0
-_1371:
-	db	"skb",0
-_1372:
-	db	":enemy",0
+_1364:
+	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/game_world.bmx",0
 	align	4
-_1368:
+_1363:
+	dd	_1364
+	dd	14
+	dd	3
+	align	4
+_1366:
 	dd	1
-	dd	_99
+	dd	_102
 	dd	2
-	dd	_636
-	dd	_628
+	dd	_673
+	dd	_665
+	dd	-4
+	dd	0
+_1411:
+	db	"skybox",0
+_1412:
+	db	"clouds",0
+_1413:
+	db	"skb",0
+_1414:
+	db	":enemy",0
+_1415:
+	db	"sp",0
+_1416:
+	db	":spawner",0
+	align	4
+_1410:
+	dd	1
+	dd	_100
+	dd	2
+	dd	_673
+	dd	_665
 	dd	-4
 	dd	2
-	dd	_1369
-	dd	_92
+	dd	_1411
+	dd	_93
 	dd	-8
 	dd	2
-	dd	_1370
-	dd	_92
+	dd	_1412
+	dd	_93
 	dd	-12
 	dd	2
-	dd	_1371
-	dd	_92
+	dd	_1413
+	dd	_93
 	dd	-16
 	dd	2
-	dd	_839
-	dd	_1372
+	dd	_876
+	dd	_1414
 	dd	-20
 	dd	2
-	dd	_969
-	dd	_92
+	dd	_1006
+	dd	_93
 	dd	-24
+	dd	2
+	dd	_1415
+	dd	_1416
+	dd	-28
 	dd	0
 	align	4
-_1330:
-	dd	_1327
+_1367:
+	dd	_1364
 	dd	26
 	dd	3
 	align	4
-_1331:
-	dd	_1327
+_1368:
+	dd	_1364
 	dd	29
 	dd	3
 	align	4
-_1333:
-	dd	_1327
+_1370:
+	dd	_1364
 	dd	30
 	dd	3
 	align	4
@@ -11616,128 +12470,138 @@ _64:
 	dd	15
 	dw	103,102,120,47,114,101,97,108,115,107,121,46,98,109,112
 	align	4
-_1337:
-	dd	_1327
+_1374:
+	dd	_1364
 	dd	31
 	dd	3
 	align	4
-_1338:
-	dd	_1327
+_1375:
+	dd	_1364
 	dd	32
 	dd	3
 	align	4
-_1339:
-	dd	_1327
+_1376:
+	dd	_1364
 	dd	34
 	dd	3
 	align	4
-_1340:
-	dd	_1327
+_1377:
+	dd	_1364
 	dd	35
 	dd	3
 	align	4
-_1341:
-	dd	_1327
+_1378:
+	dd	_1364
 	dd	36
 	dd	3
 	align	4
-_1342:
-	dd	_1327
+_1379:
+	dd	_1364
 	dd	37
 	dd	3
 	align	4
-_1343:
-	dd	_1327
+_1380:
+	dd	_1364
 	dd	38
 	dd	3
 	align	4
-_1345:
-	dd	_1327
+_1382:
+	dd	_1364
 	dd	39
 	dd	3
 	align	4
-_1348:
-	dd	_1327
+_1385:
+	dd	_1364
 	dd	43
 	dd	3
 	align	4
-_1350:
-	dd	_1327
+_1387:
+	dd	_1364
 	dd	44
 	dd	3
 	align	4
-_1353:
-	dd	_1327
+_1390:
+	dd	_1364
 	dd	47
 	dd	3
 	align	4
-_1355:
-	dd	_1327
+_1392:
+	dd	_1364
 	dd	48
 	dd	3
 	align	4
-_1363:
-	dd	_1327
+_1400:
+	dd	_1364
 	dd	49
 	dd	3
 	align	4
-_1376:
+_1405:
+	dd	_1364
+	dd	52
+	dd	3
+	align	4
+_1407:
+	dd	_1364
+	dd	53
+	dd	3
+	align	4
+_1420:
 	dd	1
-	dd	_107
+	dd	_108
 	dd	2
-	dd	_627
-	dd	_628
+	dd	_664
+	dd	_665
 	dd	-4
 	dd	0
 	align	4
-_1373:
-	dd	_1327
-	dd	60
+_1417:
+	dd	_1364
+	dd	64
 	dd	3
 	align	4
-_1375:
-	dd	_1327
-	dd	63
+_1419:
+	dd	_1364
+	dd	67
 	dd	3
-_1378:
+_1422:
 	db	":win_world",0
 	align	4
-_1377:
+_1421:
 	dd	1
-	dd	_96
+	dd	_97
 	dd	2
-	dd	_636
-	dd	_1378
+	dd	_673
+	dd	_1422
 	dd	-4
 	dd	0
 	align	4
-_1382:
+_1426:
 	dd	1
-	dd	_99
+	dd	_100
 	dd	2
-	dd	_636
-	dd	_1378
+	dd	_673
+	dd	_1422
 	dd	-4
 	dd	0
-_1381:
+_1425:
 	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/win_world.bmx",0
 	align	4
-_1380:
-	dd	_1381
+_1424:
+	dd	_1425
 	dd	10
 	dd	3
 	align	4
-_1389:
+_1433:
 	dd	1
-	dd	_101
+	dd	_102
 	dd	2
-	dd	_636
-	dd	_1378
+	dd	_673
+	dd	_1422
 	dd	-4
 	dd	0
 	align	4
-_1383:
-	dd	_1381
+_1427:
+	dd	_1425
 	dd	18
 	dd	3
 	align	4
@@ -11747,8 +12611,8 @@ _65:
 	dd	7
 	dw	121,111,117,32,119,105,110
 	align	4
-_1386:
-	dd	_1381
+_1430:
+	dd	_1425
 	dd	19
 	dd	3
 	align	4
@@ -11759,101 +12623,101 @@ _66:
 	dw	112,114,101,115,115,32,115,112,97,99,101,32,116,111,32,99
 	dw	111,110,116,105,110,117,101
 	align	4
-_1394:
-	dd	1
-	dd	_100
-	dd	2
-	dd	_636
-	dd	_1378
-	dd	-4
-	dd	0
-	align	4
-_1390:
-	dd	_1381
-	dd	25
-	dd	3
-	align	4
-_1391:
-	dd	_1381
-	dd	26
-	dd	3
-	align	4
-_1402:
-	dd	1
-	dd	_171
-	dd	2
-	dd	_636
-	dd	_1378
-	dd	-4
-	dd	0
-	align	4
-_1395:
-	dd	_1381
-	dd	31
-	dd	3
-	align	4
-_1397:
-	dd	_1381
-	dd	33
-	dd	4
-	align	4
-_1406:
-	dd	1
-	dd	_107
-	dd	2
-	dd	_627
-	dd	_1378
-	dd	-4
-	dd	0
-	align	4
-_1403:
-	dd	_1381
-	dd	39
-	dd	3
-	align	4
-_1405:
-	dd	_1381
-	dd	42
-	dd	3
-_1408:
-	db	":game_over",0
-	align	4
-_1407:
-	dd	1
-	dd	_96
-	dd	2
-	dd	_636
-	dd	_1408
-	dd	-4
-	dd	0
-	align	4
-_1412:
-	dd	1
-	dd	_99
-	dd	2
-	dd	_636
-	dd	_1408
-	dd	-4
-	dd	0
-_1411:
-	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/game_over.bmx",0
-	align	4
-_1410:
-	dd	_1411
-	dd	10
-	dd	3
-	align	4
-_1419:
+_1438:
 	dd	1
 	dd	_101
 	dd	2
-	dd	_636
-	dd	_1408
+	dd	_673
+	dd	_1422
 	dd	-4
 	dd	0
 	align	4
-_1413:
-	dd	_1411
+_1434:
+	dd	_1425
+	dd	25
+	dd	3
+	align	4
+_1435:
+	dd	_1425
+	dd	26
+	dd	3
+	align	4
+_1446:
+	dd	1
+	dd	_172
+	dd	2
+	dd	_673
+	dd	_1422
+	dd	-4
+	dd	0
+	align	4
+_1439:
+	dd	_1425
+	dd	31
+	dd	3
+	align	4
+_1441:
+	dd	_1425
+	dd	33
+	dd	4
+	align	4
+_1450:
+	dd	1
+	dd	_108
+	dd	2
+	dd	_664
+	dd	_1422
+	dd	-4
+	dd	0
+	align	4
+_1447:
+	dd	_1425
+	dd	39
+	dd	3
+	align	4
+_1449:
+	dd	_1425
+	dd	42
+	dd	3
+_1452:
+	db	":game_over",0
+	align	4
+_1451:
+	dd	1
+	dd	_97
+	dd	2
+	dd	_673
+	dd	_1452
+	dd	-4
+	dd	0
+	align	4
+_1456:
+	dd	1
+	dd	_100
+	dd	2
+	dd	_673
+	dd	_1452
+	dd	-4
+	dd	0
+_1455:
+	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/game_over.bmx",0
+	align	4
+_1454:
+	dd	_1455
+	dd	10
+	dd	3
+	align	4
+_1463:
+	dd	1
+	dd	_102
+	dd	2
+	dd	_673
+	dd	_1452
+	dd	-4
+	dd	0
+	align	4
+_1457:
+	dd	_1455
 	dd	18
 	dd	3
 	align	4
@@ -11863,123 +12727,123 @@ _68:
 	dd	9
 	dw	103,97,109,101,32,111,118,101,114
 	align	4
-_1416:
-	dd	_1411
+_1460:
+	dd	_1455
 	dd	19
 	dd	3
 	align	4
-_1424:
+_1468:
 	dd	1
-	dd	_100
+	dd	_101
 	dd	2
-	dd	_636
-	dd	_1408
+	dd	_673
+	dd	_1452
 	dd	-4
 	dd	0
 	align	4
-_1420:
-	dd	_1411
+_1464:
+	dd	_1455
 	dd	25
 	dd	3
 	align	4
-_1421:
-	dd	_1411
+_1465:
+	dd	_1455
 	dd	29
 	dd	3
 	align	4
-_1432:
+_1476:
 	dd	1
-	dd	_171
+	dd	_172
 	dd	2
-	dd	_636
-	dd	_1408
+	dd	_673
+	dd	_1452
 	dd	-4
 	dd	0
 	align	4
-_1425:
-	dd	_1411
+_1469:
+	dd	_1455
 	dd	35
 	dd	3
 	align	4
-_1427:
-	dd	_1411
+_1471:
+	dd	_1455
 	dd	37
 	dd	4
 	align	4
-_1436:
+_1480:
 	dd	1
-	dd	_107
+	dd	_108
 	dd	2
-	dd	_627
-	dd	_1408
+	dd	_664
+	dd	_1452
 	dd	-4
 	dd	0
 	align	4
-_1433:
-	dd	_1411
+_1477:
+	dd	_1455
 	dd	43
 	dd	3
 	align	4
-_1435:
-	dd	_1411
+_1479:
+	dd	_1455
 	dd	46
 	dd	3
-_1439:
+_1483:
 	db	":start_screen",0
 	align	4
-_1438:
+_1482:
 	dd	1
-	dd	_96
+	dd	_97
 	dd	2
-	dd	_636
-	dd	_1439
+	dd	_673
+	dd	_1483
 	dd	-4
 	dd	0
-_1472:
+_1516:
 	db	"startimg",0
-_1473:
+_1517:
 	db	"font",0
 	align	4
-_1471:
+_1515:
 	dd	1
-	dd	_99
+	dd	_100
 	dd	2
-	dd	_636
-	dd	_1439
+	dd	_673
+	dd	_1483
 	dd	-4
 	dd	2
-	dd	_969
-	dd	_92
+	dd	_1006
+	dd	_93
 	dd	-8
 	dd	2
-	dd	_1472
-	dd	_92
+	dd	_1516
+	dd	_93
 	dd	-12
 	dd	2
-	dd	_1473
-	dd	_92
+	dd	_1517
+	dd	_93
 	dd	-16
 	dd	0
-_1444:
+_1488:
 	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/start_screen.bmx",0
 	align	4
-_1443:
-	dd	_1444
+_1487:
+	dd	_1488
 	dd	12
 	dd	3
 	align	4
-_1445:
-	dd	_1444
+_1489:
+	dd	_1488
 	dd	14
 	dd	3
 	align	4
-_1447:
-	dd	_1444
+_1491:
+	dd	_1488
 	dd	16
 	dd	3
 	align	4
-_1448:
-	dd	_1444
+_1492:
+	dd	_1488
 	dd	17
 	dd	3
 	align	4
@@ -11989,23 +12853,23 @@ _69:
 	dd	15
 	dw	103,102,120,47,112,108,97,121,78,111,119,46,112,110,103
 	align	4
-_1452:
-	dd	_1444
+_1496:
+	dd	_1488
 	dd	18
 	dd	3
 	align	4
-_1453:
-	dd	_1444
+_1497:
+	dd	_1488
 	dd	20
 	dd	3
 	align	4
-_1461:
-	dd	_1444
+_1505:
+	dd	_1488
 	dd	22
 	dd	3
 	align	4
-_1466:
-	dd	_1444
+_1510:
+	dd	_1488
 	dd	24
 	dd	3
 	align	4
@@ -12015,22 +12879,22 @@ _70:
 	dd	7
 	dw	67,111,117,114,105,101,114
 	align	4
-_1470:
-	dd	_1444
+_1514:
+	dd	_1488
 	dd	25
 	dd	3
 	align	4
-_1477:
+_1521:
 	dd	1
-	dd	_101
+	dd	_102
 	dd	2
-	dd	_636
-	dd	_1439
+	dd	_673
+	dd	_1483
 	dd	-4
 	dd	0
 	align	4
-_1474:
-	dd	_1444
+_1518:
+	dd	_1488
 	dd	32
 	dd	3
 	align	4
@@ -12041,73 +12905,73 @@ _71:
 	dw	67,114,101,97,116,101,100,32,98,121,58,32,90,97,121,97
 	dw	110
 	align	4
-_1482:
+_1526:
 	dd	1
-	dd	_100
+	dd	_101
 	dd	2
-	dd	_636
-	dd	_1439
+	dd	_673
+	dd	_1483
 	dd	-4
 	dd	0
 	align	4
-_1478:
-	dd	_1444
+_1522:
+	dd	_1488
 	dd	38
 	dd	3
 	align	4
-_1479:
-	dd	_1444
+_1523:
+	dd	_1488
 	dd	39
 	dd	3
 	align	4
-_1496:
+_1540:
 	dd	1
-	dd	_180
+	dd	_181
 	dd	2
-	dd	_636
-	dd	_1439
+	dd	_673
+	dd	_1483
 	dd	-4
 	dd	0
 	align	4
-_1483:
-	dd	_1444
+_1527:
+	dd	_1488
 	dd	44
 	dd	3
 	align	4
-_1491:
-	dd	_1444
+_1535:
+	dd	_1488
 	dd	45
 	dd	4
 	align	4
-_1500:
+_1544:
 	dd	1
-	dd	_107
+	dd	_108
 	dd	2
-	dd	_627
-	dd	_1439
+	dd	_664
+	dd	_1483
 	dd	-4
 	dd	0
 	align	4
-_1497:
-	dd	_1444
+_1541:
+	dd	_1488
 	dd	51
 	dd	3
 	align	4
-_1499:
-	dd	_1444
+_1543:
+	dd	_1488
 	dd	54
 	dd	3
 	align	4
-_1504:
+_1548:
 	dd	1
-	dd	_96
+	dd	_97
 	dd	2
-	dd	_636
-	dd	_166
+	dd	_673
+	dd	_167
 	dd	-4
 	dd	0
 	align	4
-_2713:
+_2918:
 	dd	0x40800000
 	align	4
 _72:
@@ -12116,29 +12980,29 @@ _72:
 	dd	3
 	dw	83,77,71
 	align	4
-_1552:
+_1596:
 	dd	1
-	dd	_99
+	dd	_100
 	dd	2
-	dd	_636
-	dd	_166
+	dd	_673
+	dd	_167
 	dd	-4
 	dd	2
-	dd	_224
-	dd	_92
+	dd	_229
+	dd	_93
 	dd	-8
 	dd	0
-_1513:
+_1557:
 	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/player.bmx",0
 	align	4
-_1512:
-	dd	_1513
-	dd	16
+_1556:
+	dd	_1557
+	dd	18
 	dd	3
 	align	4
-_1514:
-	dd	_1513
-	dd	17
+_1558:
+	dd	_1557
+	dd	19
 	dd	3
 	align	4
 _73:
@@ -12147,24 +13011,24 @@ _73:
 	dd	5
 	dw	101,110,101,109,121
 	align	4
-_1526:
-	dd	_1513
-	dd	18
+_1570:
+	dd	_1557
+	dd	20
 	dd	3
 	align	4
-_1530:
-	dd	_1513
-	dd	19
-	dd	3
-	align	4
-_1535:
-	dd	_1513
+_1574:
+	dd	_1557
 	dd	21
 	dd	3
 	align	4
-_1545:
-	dd	_1513
+_1579:
+	dd	_1557
 	dd	23
+	dd	3
+	align	4
+_1589:
+	dd	_1557
+	dd	25
 	dd	3
 	align	4
 _74:
@@ -12173,145 +13037,150 @@ _74:
 	dd	14
 	dw	103,102,120,47,116,97,114,103,101,116,46,98,109,112
 	align	4
-_1551:
-	dd	_1513
-	dd	24
+_1595:
+	dd	_1557
+	dd	26
 	dd	3
 	align	4
-_1563:
+_1610:
 	dd	1
-	dd	_100
+	dd	_101
 	dd	2
-	dd	_636
-	dd	_166
+	dd	_673
+	dd	_167
 	dd	-4
 	dd	0
 	align	4
-_1553:
-	dd	_1513
-	dd	30
-	dd	3
-	align	4
-_1554:
-	dd	_1513
-	dd	31
-	dd	3
-	align	4
-_1557:
-	dd	_1513
+_1597:
+	dd	_1557
 	dd	32
 	dd	3
 	align	4
-_1560:
-	dd	_1513
+_1598:
+	dd	_1557
 	dd	33
 	dd	3
-_1580:
+	align	4
+_1601:
+	dd	_1557
+	dd	34
+	dd	3
+	align	4
+_1604:
+	dd	_1557
+	dd	35
+	dd	3
+	align	4
+_1607:
+	dd	_1557
+	dd	36
+	dd	3
+_1627:
 	db	"y_camera",0
 	align	4
-_1579:
+_1626:
 	dd	1
-	dd	_199
+	dd	_204
 	dd	2
-	dd	_636
-	dd	_166
+	dd	_673
+	dd	_167
 	dd	-4
 	dd	2
-	dd	_1580
-	dd	_92
+	dd	_1627
+	dd	_93
 	dd	-8
 	dd	0
 	align	4
-_1564:
-	dd	_1513
-	dd	39
-	dd	3
-	align	4
-_1568:
-	dd	_1513
-	dd	40
-	dd	3
-	align	4
-_2734:
-	dd	0x40a00000
-	align	4
-_1571:
-	dd	_1513
-	dd	41
-	dd	3
-	align	4
-_2735:
-	dd	0x40a00000
-	align	4
-_1572:
-	dd	_1513
+_1611:
+	dd	_1557
 	dd	42
 	dd	3
 	align	4
-_2736:
-	dd	0xc2340000
-	align	4
-_1574:
-	dd	_1513
+_1615:
+	dd	_1557
 	dd	43
 	dd	3
 	align	4
-_1575:
-	dd	_1513
+_2940:
+	dd	0x40a00000
+	align	4
+_1618:
+	dd	_1557
+	dd	44
+	dd	3
+	align	4
+_2941:
+	dd	0x40a00000
+	align	4
+_1619:
+	dd	_1557
 	dd	45
 	dd	3
 	align	4
-_2737:
-	dd	0x42340000
+_2942:
+	dd	0xc2340000
 	align	4
-_1577:
-	dd	_1513
+_1621:
+	dd	_1557
 	dd	46
 	dd	3
 	align	4
-_1578:
-	dd	_1513
+_1622:
+	dd	_1557
 	dd	48
 	dd	3
-_1648:
+	align	4
+_2943:
+	dd	0x42340000
+	align	4
+_1624:
+	dd	_1557
+	dd	49
+	dd	3
+	align	4
+_1625:
+	dd	_1557
+	dd	51
+	dd	3
+_1695:
 	db	"gt",0
 	align	4
-_1647:
+_1694:
 	dd	1
-	dd	_200
+	dd	_205
 	dd	2
-	dd	_636
-	dd	_166
+	dd	_673
+	dd	_167
 	dd	-4
 	dd	2
-	dd	_1648
-	dd	_113
+	dd	_1695
+	dd	_114
 	dd	-8
 	dd	0
 	align	4
-_1581:
-	dd	_1513
-	dd	54
+_1628:
+	dd	_1557
+	dd	57
 	dd	3
 	align	4
-_1589:
-	dd	_1513
-	dd	56
-	dd	3
-	align	4
-_1593:
-	dd	_1513
-	dd	58
-	dd	4
-	align	4
-_1597:
-	dd	_1513
+_1636:
+	dd	_1557
 	dd	59
+	dd	3
+	align	4
+_1640:
+	dd	_1557
+	dd	61
 	dd	4
 	align	4
-_1601:
-	dd	_1513
+_1644:
+	dd	_1557
 	dd	62
+	dd	4
+	align	4
+_1648:
+	dd	_1557
+	dd	65
 	dd	3
 	align	4
 _75:
@@ -12320,19 +13189,19 @@ _75:
 	dd	6
 	dw	112,105,115,116,111,108
 	align	4
-_1605:
-	dd	_1513
-	dd	64
+_1652:
+	dd	_1557
+	dd	67
 	dd	4
 	align	4
-_1609:
-	dd	_1513
-	dd	65
-	dd	4
-	align	4
-_1613:
-	dd	_1513
+_1656:
+	dd	_1557
 	dd	68
+	dd	4
+	align	4
+_1660:
+	dd	_1557
+	dd	71
 	dd	3
 	align	4
 _76:
@@ -12341,19 +13210,19 @@ _76:
 	dd	7
 	dw	115,104,111,116,103,117,110
 	align	4
-_1617:
-	dd	_1513
-	dd	70
+_1664:
+	dd	_1557
+	dd	73
 	dd	4
 	align	4
-_1621:
-	dd	_1513
-	dd	71
+_1668:
+	dd	_1557
+	dd	74
 	dd	4
 	align	4
-_1625:
-	dd	_1513
-	dd	75
+_1672:
+	dd	_1557
+	dd	78
 	dd	3
 	align	4
 _77:
@@ -12362,1055 +13231,1303 @@ _77:
 	dd	6
 	dw	104,111,109,105,110,103
 	align	4
-_1629:
-	dd	_1513
-	dd	77
+_1676:
+	dd	_1557
+	dd	80
 	dd	4
 	align	4
-_1633:
-	dd	_1513
-	dd	78
+_1680:
+	dd	_1557
+	dd	81
 	dd	4
 	align	4
-_1637:
-	dd	_1513
-	dd	82
+_1684:
+	dd	_1557
+	dd	85
 	dd	3
-_1822:
+_1893:
 	db	"tspeed_dt",0
 	align	4
-_1821:
+_1892:
 	dd	1
-	dd	_202
+	dd	_207
 	dd	2
-	dd	_636
-	dd	_166
+	dd	_673
+	dd	_167
 	dd	-4
 	dd	2
-	dd	_1822
-	dd	_129
+	dd	_1893
+	dd	_130
 	dd	-8
 	dd	0
 	align	4
-_1649:
-	dd	_1513
-	dd	88
-	dd	3
-	align	4
-_1651:
-	dd	_1513
-	dd	89
-	dd	4
-	align	4
-_2765:
-	dd	0x3c23d70a
-	align	4
-_1657:
-	dd	_1513
+_1696:
+	dd	_1557
 	dd	91
 	dd	3
 	align	4
-_1659:
-	dd	_1513
+_1698:
+	dd	_1557
 	dd	92
 	dd	4
 	align	4
-_2766:
+_2971:
 	dd	0x3c23d70a
 	align	4
-_1665:
-	dd	_1513
+_1704:
+	dd	_1557
+	dd	94
+	dd	3
+	align	4
+_1706:
+	dd	_1557
+	dd	95
+	dd	4
+	align	4
+_2972:
+	dd	0x3c23d70a
+	align	4
+_1712:
+	dd	_1557
 	dd	97
 	dd	3
 	align	4
-_2767:
-	dd	0x41200000
+_1718:
+	dd	_1557
+	dd	97
+	dd	28
 	align	4
-_1669:
-	dd	_1513
-	dd	100
+_1724:
+	dd	_1557
+	dd	98
 	dd	3
 	align	4
-_1671:
-	dd	_1513
-	dd	101
-	dd	4
+_1730:
+	dd	_1557
+	dd	98
+	dd	28
 	align	4
-_1681:
-	dd	_1513
+_1736:
+	dd	_1557
 	dd	103
 	dd	3
 	align	4
-_1683:
-	dd	_1513
-	dd	104
-	dd	4
+_2973:
+	dd	0x41200000
 	align	4
-_1693:
-	dd	_1513
-	dd	108
+_1740:
+	dd	_1557
+	dd	106
 	dd	3
 	align	4
-_1695:
-	dd	_1513
+_1742:
+	dd	_1557
+	dd	107
+	dd	4
+	align	4
+_1752:
+	dd	_1557
 	dd	109
-	dd	4
-	align	4
-_1705:
-	dd	_1513
-	dd	111
 	dd	3
 	align	4
-_1707:
-	dd	_1513
-	dd	112
+_1754:
+	dd	_1557
+	dd	110
 	dd	4
 	align	4
-_1717:
-	dd	_1513
+_1764:
+	dd	_1557
+	dd	114
+	dd	3
+	align	4
+_1766:
+	dd	_1557
 	dd	115
-	dd	3
+	dd	4
 	align	4
-_1725:
-	dd	_1513
-	dd	116
-	dd	3
-	align	4
-_2768:
-	dd	0xc3340000
-	align	4
-_1729:
-	dd	_1513
-	dd	116
-	dd	22
-	align	4
-_2769:
-	dd	0x43b40000
-	align	4
-_1735:
-	dd	_1513
+_1776:
+	dd	_1557
 	dd	117
 	dd	3
-	align	4
-_2770:
-	dd	0x43340000
-	align	4
-_1739:
-	dd	_1513
-	dd	117
-	dd	22
-	align	4
-_2771:
-	dd	0x43b40000
-	align	4
-_1745:
-	dd	_1513
-	dd	119
-	dd	3
-	align	4
-_1753:
-	dd	_1513
-	dd	120
-	dd	3
-	align	4
-_2772:
-	dd	0xc3340000
-	align	4
-_1757:
-	dd	_1513
-	dd	120
-	dd	24
-	align	4
-_2773:
-	dd	0x43b40000
-	align	4
-_1763:
-	dd	_1513
-	dd	121
-	dd	3
-	align	4
-_2774:
-	dd	0x43340000
-	align	4
-_1767:
-	dd	_1513
-	dd	121
-	dd	24
-	align	4
-_2775:
-	dd	0x43b40000
-	align	4
-_1773:
-	dd	_1513
-	dd	124
-	dd	3
-	align	4
-_1775:
-	dd	_1513
-	dd	124
-	dd	19
 	align	4
 _1778:
-	dd	_1513
-	dd	125
-	dd	3
-	align	4
-_1780:
-	dd	_1513
-	dd	125
-	dd	19
-	align	4
-_1783:
-	dd	_1513
-	dd	126
-	dd	3
-	align	4
-_1785:
-	dd	_1513
-	dd	126
-	dd	19
+	dd	_1557
+	dd	118
+	dd	4
 	align	4
 _1788:
-	dd	_1513
+	dd	_1557
+	dd	121
+	dd	3
+	align	4
+_1796:
+	dd	_1557
+	dd	122
+	dd	3
+	align	4
+_2974:
+	dd	0xc3340000
+	align	4
+_1800:
+	dd	_1557
+	dd	122
+	dd	22
+	align	4
+_2975:
+	dd	0x43b40000
+	align	4
+_1806:
+	dd	_1557
+	dd	123
+	dd	3
+	align	4
+_2976:
+	dd	0x43340000
+	align	4
+_1810:
+	dd	_1557
+	dd	123
+	dd	22
+	align	4
+_2977:
+	dd	0x43b40000
+	align	4
+_1816:
+	dd	_1557
+	dd	125
+	dd	3
+	align	4
+_1824:
+	dd	_1557
+	dd	126
+	dd	3
+	align	4
+_2978:
+	dd	0xc3340000
+	align	4
+_1828:
+	dd	_1557
+	dd	126
+	dd	24
+	align	4
+_2979:
+	dd	0x43b40000
+	align	4
+_1834:
+	dd	_1557
 	dd	127
 	dd	3
 	align	4
-_1790:
-	dd	_1513
+_2980:
+	dd	0x43340000
+	align	4
+_1838:
+	dd	_1557
 	dd	127
+	dd	24
+	align	4
+_2981:
+	dd	0x43b40000
+	align	4
+_1844:
+	dd	_1557
+	dd	130
+	dd	3
+	align	4
+_1846:
+	dd	_1557
+	dd	130
 	dd	19
 	align	4
-_1793:
-	dd	_1513
+_1849:
+	dd	_1557
+	dd	131
+	dd	3
+	align	4
+_1851:
+	dd	_1557
+	dd	131
+	dd	19
+	align	4
+_1854:
+	dd	_1557
 	dd	132
 	dd	3
 	align	4
-_1800:
-	dd	_1513
-	dd	134
+_1856:
+	dd	_1557
+	dd	132
+	dd	19
+	align	4
+_1859:
+	dd	_1557
+	dd	133
 	dd	3
 	align	4
-_1805:
-	dd	_1513
-	dd	137
-	dd	3
+_1861:
+	dd	_1557
+	dd	133
+	dd	19
 	align	4
-_1809:
-	dd	_1513
+_1864:
+	dd	_1557
 	dd	138
 	dd	3
 	align	4
-_1813:
-	dd	_1513
-	dd	139
-	dd	3
-	align	4
-_1817:
-	dd	_1513
+_1871:
+	dd	_1557
 	dd	140
 	dd	3
-_1906:
-	db	"b",0
-_1907:
-	db	":bullet",0
 	align	4
-_1905:
-	dd	1
-	dd	_203
-	dd	2
-	dd	_636
-	dd	_166
-	dd	-4
-	dd	2
-	dd	_1906
-	dd	_1907
-	dd	-8
-	dd	0
+_1876:
+	dd	_1557
+	dd	143
+	dd	3
 	align	4
-_1823:
-	dd	_1513
+_1880:
+	dd	_1557
+	dd	144
+	dd	3
+	align	4
+_1884:
+	dd	_1557
 	dd	145
 	dd	3
 	align	4
-_1831:
-	dd	_1513
-	dd	147
-	dd	4
+_1888:
+	dd	_1557
+	dd	146
+	dd	3
+_1977:
+	db	"b",0
+_1978:
+	db	":bullet",0
 	align	4
-_1835:
-	dd	_1513
-	dd	149
-	dd	5
+_1976:
+	dd	1
+	dd	_208
+	dd	2
+	dd	_673
+	dd	_167
+	dd	-4
+	dd	2
+	dd	_1977
+	dd	_1978
+	dd	-8
+	dd	0
 	align	4
-_2844:
-	dd	0x40400000
-	align	4
-_1844:
-	dd	_1513
-	dd	150
-	dd	5
-	align	4
-_2845:
-	dd	0x40400000
-	align	4
-_2846:
-	dd	0x40400000
-	align	4
-_1853:
-	dd	_1513
+_1894:
+	dd	_1557
 	dd	151
-	dd	5
+	dd	3
 	align	4
-_2847:
-	dd	0x40400000
-	align	4
-_2848:
-	dd	0x40400000
-	align	4
-_1862:
-	dd	_1513
-	dd	152
-	dd	5
-	align	4
-_1863:
-	dd	_1513
-	dd	154
+_1902:
+	dd	_1557
+	dd	153
 	dd	4
 	align	4
-_1867:
-	dd	_1513
+_1906:
+	dd	_1557
 	dd	155
 	dd	5
 	align	4
-_2849:
+_3060:
 	dd	0x40400000
 	align	4
-_1877:
-	dd	_1513
+_1915:
+	dd	_1557
 	dd	156
 	dd	5
 	align	4
-_1887:
-	dd	_1513
+_3061:
+	dd	0x40400000
+	align	4
+_3062:
+	dd	0x40400000
+	align	4
+_1924:
+	dd	_1557
 	dd	157
 	dd	5
 	align	4
-_1895:
-	dd	_1513
+_3063:
+	dd	0x40400000
+	align	4
+_3064:
+	dd	0x40400000
+	align	4
+_1933:
+	dd	_1557
 	dd	158
 	dd	5
 	align	4
-_1896:
-	dd	_1513
+_1934:
+	dd	_1557
 	dd	160
 	dd	4
 	align	4
-_2850:
-	dd	0x40400000
-_1935:
-	db	"yx",0
-_1936:
-	db	"yy",0
-_1937:
-	db	"yz",0
 _1938:
-	db	"yspeed",0
+	dd	_1557
+	dd	161
+	dd	5
 	align	4
-_1934:
-	dd	1
-	dd	_204
-	dd	2
-	dd	_636
-	dd	_166
-	dd	-4
-	dd	2
-	dd	_1935
-	dd	_92
-	dd	-8
-	dd	2
-	dd	_1936
-	dd	_92
-	dd	-12
-	dd	2
-	dd	_1937
-	dd	_92
-	dd	-16
-	dd	2
-	dd	_1938
-	dd	_92
-	dd	-20
-	dd	2
-	dd	_1906
-	dd	_1907
-	dd	-24
-	dd	0
+_3065:
+	dd	0x40400000
 	align	4
-_1908:
-	dd	_1513
-	dd	167
-	dd	4
-	align	4
-_1910:
-	dd	_1513
-	dd	168
-	dd	4
-	align	4
-_1915:
-	dd	_1513
-	dd	169
-	dd	4
-	align	4
-_1918:
-	dd	_1513
-	dd	170
-	dd	4
-	align	4
-_1927:
-	dd	_1513
-	dd	171
-	dd	4
-	align	4
-_1933:
-	dd	_1513
-	dd	172
-	dd	4
 _1948:
-	db	"cam",0
+	dd	_1557
+	dd	162
+	dd	5
 	align	4
-_1947:
-	dd	1
-	dd	_206
-	dd	2
-	dd	_636
-	dd	_166
-	dd	-4
-	dd	2
-	dd	_1948
-	dd	_92
-	dd	-8
-	dd	0
+_1958:
+	dd	_1557
+	dd	163
+	dd	5
 	align	4
-_1939:
-	dd	_1513
-	dd	177
-	dd	3
-	align	4
-_1943:
-	dd	_1513
-	dd	178
-	dd	3
-	align	4
-_1946:
-	dd	_1513
-	dd	179
-	dd	3
-	align	4
-_1980:
-	dd	1
-	dd	_107
-	dd	2
-	dd	_128
-	dd	_129
-	dd	-4
-	dd	2
-	dd	_130
-	dd	_129
-	dd	-8
-	dd	2
-	dd	_131
-	dd	_129
-	dd	-12
-	dd	2
-	dd	_133
-	dd	_92
-	dd	-16
-	dd	2
-	dd	_132
-	dd	_129
-	dd	-20
-	dd	2
-	dd	_839
-	dd	_166
-	dd	-24
-	dd	0
-	align	4
-_1949:
-	dd	_1513
-	dd	187
-	dd	3
-	align	4
-_1951:
-	dd	_1513
-	dd	189
-	dd	3
-	align	4
-_1955:
-	dd	_1513
-	dd	190
-	dd	3
-	align	4
-_1959:
-	dd	_1513
-	dd	191
-	dd	3
-	align	4
-_1963:
-	dd	_1513
-	dd	192
-	dd	3
+_1966:
+	dd	_1557
+	dd	164
+	dd	5
 	align	4
 _1967:
-	dd	_1513
-	dd	193
-	dd	3
+	dd	_1557
+	dd	166
+	dd	4
 	align	4
-_1971:
-	dd	_1513
-	dd	194
+_3066:
+	dd	0x40400000
+_2006:
+	db	"yx",0
+_2007:
+	db	"yy",0
+_2008:
+	db	"yz",0
+_2009:
+	db	"yspeed",0
+	align	4
+_2005:
+	dd	1
+	dd	_209
+	dd	2
+	dd	_673
+	dd	_167
+	dd	-4
+	dd	2
+	dd	_2006
+	dd	_93
+	dd	-8
+	dd	2
+	dd	_2007
+	dd	_93
+	dd	-12
+	dd	2
+	dd	_2008
+	dd	_93
+	dd	-16
+	dd	2
+	dd	_2009
+	dd	_93
+	dd	-20
+	dd	2
+	dd	_1977
+	dd	_1978
+	dd	-24
+	dd	0
+	align	4
+_1979:
+	dd	_1557
+	dd	173
+	dd	4
+	align	4
+_1981:
+	dd	_1557
+	dd	174
+	dd	4
+	align	4
+_1986:
+	dd	_1557
+	dd	175
+	dd	4
+	align	4
+_1989:
+	dd	_1557
+	dd	176
+	dd	4
+	align	4
+_1998:
+	dd	_1557
+	dd	177
+	dd	4
+	align	4
+_2004:
+	dd	_1557
+	dd	178
+	dd	4
+_2060:
+	db	"zo",0
+	align	4
+_2059:
+	dd	1
+	dd	_211
+	dd	2
+	dd	_673
+	dd	_167
+	dd	-4
+	dd	2
+	dd	_1977
+	dd	_1978
+	dd	-8
+	dd	2
+	dd	_2060
+	dd	_1414
+	dd	-12
+	dd	0
+	align	4
+_2010:
+	dd	_1557
+	dd	183
 	dd	3
 	align	4
 _78:
 	dd	_bbStringClass
 	dd	2147483647
 	dd	6
-	dw	112,108,97,121,101,114
-	align	4
-_1979:
-	dd	_1513
-	dd	197
-	dd	3
-	align	4
-_1984:
-	dd	1
-	dd	_96
-	dd	2
-	dd	_636
-	dd	_1372
-	dd	-4
-	dd	0
-	align	4
-_2012:
-	dd	1
-	dd	_99
-	dd	2
-	dd	_636
-	dd	_1372
-	dd	-4
-	dd	0
-_1993:
-	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/enemy.bmx",0
-	align	4
-_1992:
-	dd	_1993
-	dd	7
-	dd	3
-	align	4
-_1994:
-	dd	_1993
-	dd	9
-	dd	3
-	align	4
-_2004:
-	dd	_1993
-	dd	10
-	dd	3
-	align	4
-_2028:
-	dd	1
-	dd	_100
-	dd	2
-	dd	_636
-	dd	_1372
-	dd	-4
-	dd	0
-	align	4
-_2013:
-	dd	_1993
-	dd	16
-	dd	3
+	dw	98,117,108,108,101,116
 	align	4
 _2014:
-	dd	_1993
-	dd	20
+	dd	_1557
+	dd	184
 	dd	3
 	align	4
-_2017:
-	dd	_1993
-	dd	21
+_2018:
+	dd	_1557
+	dd	185
 	dd	3
 	align	4
-_2021:
-	dd	_1993
-	dd	21
-	dd	19
+_2026:
+	dd	_1557
+	dd	186
+	dd	4
 	align	4
-_2022:
-	dd	_1993
-	dd	22
-	dd	3
-	align	4
-_2025:
-	dd	_1993
-	dd	23
-	dd	3
-	align	4
-_2117:
-	dd	1
-	dd	_202
-	dd	2
-	dd	_636
-	dd	_1372
-	dd	-4
-	dd	2
-	dd	_165
-	dd	_166
-	dd	-8
-	dd	0
-	align	4
-_2029:
-	dd	_1993
-	dd	29
-	dd	3
-	align	4
-_2035:
-	dd	_1993
-	dd	31
+_2034:
+	dd	_1557
+	dd	187
 	dd	4
 	align	4
 _2039:
-	dd	_1993
-	dd	34
+	dd	_1557
+	dd	189
 	dd	3
 	align	4
-_79:
-	dd	_bbStringClass
-	dd	2147483647
-	dd	6
-	dw	114,97,110,100,111,109
-	align	4
-_2043:
-	dd	_1993
-	dd	36
+_2041:
+	dd	_1557
+	dd	191
 	dd	4
 	align	4
-_2047:
-	dd	_1993
-	dd	36
-	dd	24
+_2049:
+	dd	_1557
+	dd	192
+	dd	4
 	align	4
 _2052:
-	dd	_1993
-	dd	37
-	dd	4
+	dd	_1557
+	dd	195
+	dd	3
 	align	4
 _2056:
-	dd	_1993
-	dd	37
-	dd	24
+	dd	_1557
+	dd	197
+	dd	4
+_2070:
+	db	"cam",0
+	align	4
+_2069:
+	dd	1
+	dd	_212
+	dd	2
+	dd	_673
+	dd	_167
+	dd	-4
+	dd	2
+	dd	_2070
+	dd	_93
+	dd	-8
+	dd	0
 	align	4
 _2061:
-	dd	_1993
-	dd	38
-	dd	4
+	dd	_1557
+	dd	205
+	dd	3
 	align	4
 _2065:
-	dd	_1993
-	dd	38
-	dd	24
-	align	4
-_2070:
-	dd	_1993
-	dd	39
-	dd	4
-	align	4
-_2074:
-	dd	_1993
-	dd	39
-	dd	24
-	align	4
-_2079:
-	dd	_1993
-	dd	40
-	dd	4
-	align	4
-_2083:
-	dd	_1993
-	dd	40
-	dd	24
-	align	4
-_2088:
-	dd	_1993
-	dd	41
-	dd	4
-	align	4
-_2092:
-	dd	_1993
-	dd	41
-	dd	24
-	align	4
-_2097:
-	dd	_1993
-	dd	44
+	dd	_1557
+	dd	206
 	dd	3
 	align	4
-_2101:
-	dd	_1993
-	dd	46
-	dd	4
+_2068:
+	dd	_1557
+	dd	207
+	dd	3
 	align	4
-_2107:
-	dd	_1993
-	dd	47
-	dd	4
-	align	4
-_2112:
-	dd	_1993
-	dd	48
-	dd	4
-	align	4
-_2157:
+_2102:
 	dd	1
-	dd	_203
+	dd	_108
 	dd	2
-	dd	_636
-	dd	_1372
+	dd	_129
+	dd	_130
 	dd	-4
 	dd	2
-	dd	_165
-	dd	_166
+	dd	_131
+	dd	_130
 	dd	-8
 	dd	2
-	dd	_1906
-	dd	_1907
+	dd	_132
+	dd	_130
 	dd	-12
+	dd	2
+	dd	_134
+	dd	_93
+	dd	-16
+	dd	2
+	dd	_133
+	dd	_130
+	dd	-20
+	dd	2
+	dd	_876
+	dd	_167
+	dd	-24
 	dd	0
 	align	4
-_2118:
-	dd	_1993
-	dd	56
+_2071:
+	dd	_1557
+	dd	215
 	dd	3
 	align	4
-_2124:
-	dd	_1993
-	dd	58
-	dd	4
+_2073:
+	dd	_1557
+	dd	217
+	dd	3
 	align	4
-_2130:
-	dd	_1993
-	dd	60
-	dd	4
+_2077:
+	dd	_1557
+	dd	218
+	dd	3
 	align	4
-_2132:
-	dd	_1993
-	dd	61
-	dd	4
+_2081:
+	dd	_1557
+	dd	219
+	dd	3
 	align	4
-_2137:
-	dd	_1993
-	dd	62
-	dd	4
+_2085:
+	dd	_1557
+	dd	220
+	dd	3
 	align	4
-_2965:
-	dd	0x40400000
+_2089:
+	dd	_1557
+	dd	221
+	dd	3
 	align	4
-_2146:
-	dd	_1993
-	dd	63
-	dd	4
-	align	4
-_2151:
-	dd	_1993
-	dd	64
-	dd	4
-	align	4
-_2196:
-	dd	1
-	dd	_217
-	dd	2
-	dd	_636
-	dd	_1372
-	dd	-4
-	dd	2
-	dd	_1906
-	dd	_1907
-	dd	-8
-	dd	0
-	align	4
-_2158:
-	dd	_1993
-	dd	71
+_2093:
+	dd	_1557
+	dd	222
 	dd	3
 	align	4
 _80:
 	dd	_bbStringClass
 	dd	2147483647
 	dd	6
-	dw	98,117,108,108,101,116
+	dw	112,108,97,121,101,114
 	align	4
-_2162:
-	dd	_1993
-	dd	73
+_2101:
+	dd	_1557
+	dd	225
 	dd	3
 	align	4
-_2170:
-	dd	_1993
-	dd	75
-	dd	4
-	align	4
-_2178:
-	dd	_1993
-	dd	76
-	dd	4
-	align	4
-_2183:
-	dd	_1993
-	dd	79
-	dd	3
-	align	4
-_2187:
-	dd	_1993
-	dd	81
-	dd	4
-	align	4
-_2192:
-	dd	_1993
-	dd	82
-	dd	4
-	align	4
-_2228:
+_2106:
 	dd	1
-	dd	_107
+	dd	_97
 	dd	2
-	dd	_128
-	dd	_129
-	dd	-4
-	dd	2
-	dd	_130
-	dd	_129
-	dd	-8
-	dd	2
-	dd	_131
-	dd	_129
-	dd	-12
-	dd	2
-	dd	_133
-	dd	_92
-	dd	-16
-	dd	2
-	dd	_132
-	dd	_129
-	dd	-20
-	dd	2
-	dd	_839
-	dd	_1372
-	dd	-24
-	dd	0
-	align	4
-_2197:
-	dd	_1993
-	dd	89
-	dd	3
-	align	4
-_2199:
-	dd	_1993
-	dd	91
-	dd	3
-	align	4
-_2203:
-	dd	_1993
-	dd	92
-	dd	3
-	align	4
-_2207:
-	dd	_1993
-	dd	93
-	dd	3
-	align	4
-_2211:
-	dd	_1993
-	dd	94
-	dd	3
-	align	4
-_2215:
-	dd	_1993
-	dd	95
-	dd	3
-	align	4
-_2219:
-	dd	_1993
-	dd	96
-	dd	3
-	align	4
-_2227:
-	dd	_1993
-	dd	99
-	dd	3
-	align	4
-_2232:
-	dd	1
-	dd	_96
-	dd	2
-	dd	_636
-	dd	_1907
+	dd	_673
+	dd	_1414
 	dd	-4
 	dd	0
 	align	4
-_3009:
-	dd	0x40a00000
-	align	4
-_2252:
-	dd	1
-	dd	_99
-	dd	2
-	dd	_636
-	dd	_1907
-	dd	-4
-	dd	0
-_2241:
-	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/bullet.bmx",0
-	align	4
-_2240:
-	dd	_2241
-	dd	9
-	dd	3
-	align	4
-_2242:
-	dd	_2241
-	dd	11
-	dd	3
-	align	4
-_2260:
+_2134:
 	dd	1
 	dd	_100
 	dd	2
-	dd	_636
-	dd	_1907
+	dd	_673
+	dd	_1414
+	dd	-4
+	dd	0
+_2115:
+	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/enemy.bmx",0
+	align	4
+_2114:
+	dd	_2115
+	dd	8
+	dd	3
+	align	4
+_2116:
+	dd	_2115
+	dd	10
+	dd	3
+	align	4
+_2126:
+	dd	_2115
+	dd	11
+	dd	3
+	align	4
+_2150:
+	dd	1
+	dd	_101
+	dd	2
+	dd	_673
+	dd	_1414
 	dd	-4
 	dd	0
 	align	4
-_2253:
-	dd	_2241
+_2135:
+	dd	_2115
 	dd	17
 	dd	3
 	align	4
-_2254:
-	dd	_2241
+_2136:
+	dd	_2115
 	dd	21
 	dd	3
 	align	4
-_2257:
-	dd	_2241
+_2139:
+	dd	_2115
 	dd	22
 	dd	3
 	align	4
-_2272:
-	dd	1
-	dd	_225
-	dd	2
-	dd	_636
-	dd	_1907
-	dd	-4
-	dd	0
+_2143:
+	dd	_2115
+	dd	22
+	dd	19
 	align	4
-_2261:
-	dd	_2241
-	dd	28
+_2144:
+	dd	_2115
+	dd	23
 	dd	3
 	align	4
-_2267:
-	dd	_2241
+_2147:
+	dd	_2115
+	dd	24
+	dd	3
+	align	4
+_2239:
+	dd	1
+	dd	_207
+	dd	2
+	dd	_673
+	dd	_1414
+	dd	-4
+	dd	2
+	dd	_166
+	dd	_167
+	dd	-8
+	dd	0
+	align	4
+_2151:
+	dd	_2115
 	dd	30
+	dd	3
+	align	4
+_2157:
+	dd	_2115
+	dd	32
 	dd	4
 	align	4
-_2295:
-	dd	1
-	dd	_202
-	dd	2
-	dd	_636
-	dd	_1907
-	dd	-4
-	dd	0
-	align	4
-_2273:
-	dd	_2241
-	dd	37
+_2161:
+	dd	_2115
+	dd	35
 	dd	3
 	align	4
-_2283:
-	dd	_2241
+_81:
+	dd	_bbStringClass
+	dd	2147483647
+	dd	6
+	dw	114,97,110,100,111,109
+	align	4
+_2165:
+	dd	_2115
+	dd	37
+	dd	4
+	align	4
+_2169:
+	dd	_2115
+	dd	37
+	dd	24
+	align	4
+_2174:
+	dd	_2115
 	dd	38
 	dd	4
 	align	4
-_2290:
-	dd	_2241
+_2178:
+	dd	_2115
+	dd	38
+	dd	24
+	align	4
+_2183:
+	dd	_2115
+	dd	39
+	dd	4
+	align	4
+_2187:
+	dd	_2115
+	dd	39
+	dd	24
+	align	4
+_2192:
+	dd	_2115
+	dd	40
+	dd	4
+	align	4
+_2196:
+	dd	_2115
+	dd	40
+	dd	24
+	align	4
+_2201:
+	dd	_2115
 	dd	41
+	dd	4
+	align	4
+_2205:
+	dd	_2115
+	dd	41
+	dd	24
+	align	4
+_2210:
+	dd	_2115
+	dd	42
+	dd	4
+	align	4
+_2214:
+	dd	_2115
+	dd	42
+	dd	24
+	align	4
+_2219:
+	dd	_2115
+	dd	45
 	dd	3
 	align	4
-_2327:
+_2223:
+	dd	_2115
+	dd	47
+	dd	4
+	align	4
+_2229:
+	dd	_2115
+	dd	48
+	dd	4
+	align	4
+_2234:
+	dd	_2115
+	dd	49
+	dd	4
+	align	4
+_2279:
 	dd	1
-	dd	_107
+	dd	_208
 	dd	2
-	dd	_128
-	dd	_129
+	dd	_673
+	dd	_1414
 	dd	-4
 	dd	2
-	dd	_130
-	dd	_129
+	dd	_166
+	dd	_167
 	dd	-8
 	dd	2
-	dd	_131
-	dd	_129
+	dd	_1977
+	dd	_1978
 	dd	-12
+	dd	0
+	align	4
+_2240:
+	dd	_2115
+	dd	57
+	dd	3
+	align	4
+_2246:
+	dd	_2115
+	dd	59
+	dd	4
+	align	4
+_2252:
+	dd	_2115
+	dd	61
+	dd	4
+	align	4
+_2254:
+	dd	_2115
+	dd	62
+	dd	4
+	align	4
+_2259:
+	dd	_2115
+	dd	63
+	dd	4
+	align	4
+_3202:
+	dd	0x40400000
+	align	4
+_2268:
+	dd	_2115
+	dd	64
+	dd	4
+	align	4
+_2273:
+	dd	_2115
+	dd	65
+	dd	4
+	align	4
+_2318:
+	dd	1
+	dd	_211
 	dd	2
-	dd	_133
-	dd	_92
-	dd	-16
+	dd	_673
+	dd	_1414
+	dd	-4
+	dd	2
+	dd	_1977
+	dd	_1978
+	dd	-8
+	dd	0
+	align	4
+_2280:
+	dd	_2115
+	dd	72
+	dd	3
+	align	4
+_2284:
+	dd	_2115
+	dd	74
+	dd	3
+	align	4
+_2292:
+	dd	_2115
+	dd	76
+	dd	4
+	align	4
+_2300:
+	dd	_2115
+	dd	77
+	dd	4
+	align	4
+_2305:
+	dd	_2115
+	dd	80
+	dd	3
+	align	4
+_2309:
+	dd	_2115
+	dd	82
+	dd	4
+	align	4
+_2314:
+	dd	_2115
+	dd	83
+	dd	4
+	align	4
+_2350:
+	dd	1
+	dd	_108
+	dd	2
+	dd	_129
+	dd	_130
+	dd	-4
+	dd	2
+	dd	_131
+	dd	_130
+	dd	-8
 	dd	2
 	dd	_132
-	dd	_129
+	dd	_130
+	dd	-12
+	dd	2
+	dd	_134
+	dd	_93
+	dd	-16
+	dd	2
+	dd	_133
+	dd	_130
 	dd	-20
 	dd	2
-	dd	_839
-	dd	_1907
+	dd	_876
+	dd	_1414
 	dd	-24
 	dd	0
 	align	4
-_2296:
-	dd	_2241
+_2319:
+	dd	_2115
+	dd	90
+	dd	3
+	align	4
+_2321:
+	dd	_2115
+	dd	92
+	dd	3
+	align	4
+_2325:
+	dd	_2115
+	dd	93
+	dd	3
+	align	4
+_2329:
+	dd	_2115
+	dd	94
+	dd	3
+	align	4
+_2333:
+	dd	_2115
+	dd	95
+	dd	3
+	align	4
+_2337:
+	dd	_2115
+	dd	96
+	dd	3
+	align	4
+_2341:
+	dd	_2115
+	dd	97
+	dd	3
+	align	4
+_2349:
+	dd	_2115
+	dd	100
+	dd	3
+	align	4
+_2354:
+	dd	1
+	dd	_97
+	dd	2
+	dd	_673
+	dd	_1978
+	dd	-4
+	dd	0
+	align	4
+_3246:
+	dd	0x40a00000
+	align	4
+_2374:
+	dd	1
+	dd	_100
+	dd	2
+	dd	_673
+	dd	_1978
+	dd	-4
+	dd	0
+_2363:
+	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/bullet.bmx",0
+	align	4
+_2362:
+	dd	_2363
+	dd	9
+	dd	3
+	align	4
+_2364:
+	dd	_2363
+	dd	11
+	dd	3
+	align	4
+_2382:
+	dd	1
+	dd	_101
+	dd	2
+	dd	_673
+	dd	_1978
+	dd	-4
+	dd	0
+	align	4
+_2375:
+	dd	_2363
+	dd	17
+	dd	3
+	align	4
+_2376:
+	dd	_2363
+	dd	21
+	dd	3
+	align	4
+_2379:
+	dd	_2363
+	dd	22
+	dd	3
+	align	4
+_2394:
+	dd	1
+	dd	_230
+	dd	2
+	dd	_673
+	dd	_1978
+	dd	-4
+	dd	0
+	align	4
+_2383:
+	dd	_2363
+	dd	28
+	dd	3
+	align	4
+_2389:
+	dd	_2363
+	dd	30
+	dd	4
+	align	4
+_2417:
+	dd	1
+	dd	_207
+	dd	2
+	dd	_673
+	dd	_1978
+	dd	-4
+	dd	0
+	align	4
+_2395:
+	dd	_2363
+	dd	37
+	dd	3
+	align	4
+_2405:
+	dd	_2363
+	dd	38
+	dd	4
+	align	4
+_2412:
+	dd	_2363
+	dd	41
+	dd	3
+	align	4
+_2449:
+	dd	1
+	dd	_108
+	dd	2
+	dd	_129
+	dd	_130
+	dd	-4
+	dd	2
+	dd	_131
+	dd	_130
+	dd	-8
+	dd	2
+	dd	_132
+	dd	_130
+	dd	-12
+	dd	2
+	dd	_134
+	dd	_93
+	dd	-16
+	dd	2
+	dd	_133
+	dd	_130
+	dd	-20
+	dd	2
+	dd	_876
+	dd	_1978
+	dd	-24
+	dd	0
+	align	4
+_2418:
+	dd	_2363
 	dd	47
 	dd	3
 	align	4
-_2298:
-	dd	_2241
+_2420:
+	dd	_2363
 	dd	49
 	dd	3
 	align	4
-_2302:
-	dd	_2241
+_2424:
+	dd	_2363
 	dd	50
 	dd	3
 	align	4
-_2306:
-	dd	_2241
+_2428:
+	dd	_2363
 	dd	51
 	dd	3
 	align	4
-_2310:
-	dd	_2241
+_2432:
+	dd	_2363
 	dd	52
 	dd	3
 	align	4
-_2314:
-	dd	_2241
+_2436:
+	dd	_2363
 	dd	53
 	dd	3
 	align	4
-_2318:
-	dd	_2241
+_2440:
+	dd	_2363
 	dd	54
 	dd	3
 	align	4
-_2326:
-	dd	_2241
+_2448:
+	dd	_2363
 	dd	57
+	dd	3
+	align	4
+_2451:
+	dd	1
+	dd	_97
+	dd	2
+	dd	_673
+	dd	_1416
+	dd	-4
+	dd	0
+	align	4
+_2467:
+	dd	1
+	dd	_100
+	dd	2
+	dd	_673
+	dd	_1416
+	dd	-4
+	dd	0
+_2456:
+	db	"C:/Users/zayan/OneDrive/Documents/GitHub/Space-Sim-BlitzMax-Blitz3DSDK/spawner.bmx",0
+	align	4
+_2455:
+	dd	_2456
+	dd	9
+	dd	3
+	align	4
+_2457:
+	dd	_2456
+	dd	11
+	dd	3
+	align	4
+_2472:
+	dd	1
+	dd	_101
+	dd	2
+	dd	_673
+	dd	_1416
+	dd	-4
+	dd	0
+	align	4
+_2468:
+	dd	_2456
+	dd	17
+	dd	3
+	align	4
+_2469:
+	dd	_2456
+	dd	21
+	dd	3
+_2499:
+	db	"newEnemy",0
+	align	4
+_2498:
+	dd	1
+	dd	_237
+	dd	2
+	dd	_673
+	dd	_1416
+	dd	-4
+	dd	2
+	dd	_2499
+	dd	_1414
+	dd	-8
+	dd	0
+	align	4
+_2473:
+	dd	_2456
+	dd	27
+	dd	3
+	align	4
+_2479:
+	dd	_2456
+	dd	29
+	dd	4
+	align	4
+_2487:
+	dd	_2456
+	dd	30
+	dd	4
+	align	4
+_2493:
+	dd	_2456
+	dd	31
+	dd	4
+	align	4
+_2531:
+	dd	1
+	dd	_108
+	dd	2
+	dd	_129
+	dd	_130
+	dd	-4
+	dd	2
+	dd	_131
+	dd	_130
+	dd	-8
+	dd	2
+	dd	_132
+	dd	_130
+	dd	-12
+	dd	2
+	dd	_134
+	dd	_93
+	dd	-16
+	dd	2
+	dd	_133
+	dd	_130
+	dd	-20
+	dd	2
+	dd	_876
+	dd	_1416
+	dd	-24
+	dd	0
+	align	4
+_2500:
+	dd	_2456
+	dd	39
+	dd	3
+	align	4
+_2502:
+	dd	_2456
+	dd	41
+	dd	3
+	align	4
+_2506:
+	dd	_2456
+	dd	42
+	dd	3
+	align	4
+_2510:
+	dd	_2456
+	dd	43
+	dd	3
+	align	4
+_2514:
+	dd	_2456
+	dd	44
+	dd	3
+	align	4
+_2518:
+	dd	_2456
+	dd	45
+	dd	3
+	align	4
+_2522:
+	dd	_2456
+	dd	46
+	dd	3
+	align	4
+_82:
+	dd	_bbStringClass
+	dd	2147483647
+	dd	7
+	dw	115,112,97,119,110,101,114
+	align	4
+_2530:
+	dd	_2456
+	dd	49
 	dd	3
