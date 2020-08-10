@@ -1,6 +1,6 @@
 Type enemy Extends yentity
 	
-	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, movementType$ = "homing", randDir = 4,removed 
+	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, movementType$ = "turret", randDir = 4,removed 
 	Field body_dmg = 3, enemy_type = 1
 	
 	Method init()
@@ -9,6 +9,9 @@ Type enemy Extends yentity
 		
 		shootTimer = ytimer.Create(shootTimerInterval)
 		moveTimer = ytimer.Create(5)
+		If movementType = "turret" Then
+			move_by(0, 0, speed * 60)
+		EndIf
 		
 	EndMethod
 	

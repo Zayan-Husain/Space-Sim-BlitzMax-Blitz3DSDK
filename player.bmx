@@ -9,14 +9,16 @@ Type player Extends yentity
 	
 	Field shootTimer:ytimer, shootInterval = 0.8, team = 1, gun_type:String = "SMG", bullet_dmg = 1
 	
-	Field max_hp = 25, hp = max_hp
+	Field max_hp = 99999999999, hp = max_hp
 	
 	Field campiv, tr:yentity
+	
+	Field target, home_range = 100
 
 	Method init()
 	
 		Super.init()
-		tr = yentity( get_by_type( "enemy" ).First() )
+		'tr = yentity( get_by_type( "enemy" ).First() )
 		campiv = bbCreatePivot()
 		bbEntityParent grafic, campiv
 		
@@ -36,6 +38,20 @@ Type player Extends yentity
 		hit()
 		'fps_cam()
 	End Method'end update
+	
+	Method set_home_target()
+		
+		enemies:TList = get_by_type( "enemy" )
+		
+		For e:enemy = EachIn enemies
+			dist = bbEntityDistance( grafic, e.grafic )
+			If dist < home_range Then
+				'Print "enemy in distance: " + dist
+				tr = e
+				Return
+			EndIf
+		Next
+	EndMethod
 	
 	Method fps_cam()
 		
@@ -158,12 +174,16 @@ Type player Extends yentity
 				Return
 			EndIf
 			If gun_type = "homing" Then
+				set_home_target()
 				b:bullet = make_bullet( x, y+3, z, 1 )
-				b.target = tr
-				b.movementType = "homing"
+				If tr <> Null Then
+					b.target = tr
+					b.movementType = "homing"
+				EndIf
 				return
 			EndIf
-			make_bullet( x, y+3, z, 1 )
+			b = make_bullet( x, y+3, z, 1 )
+			bbPointEntity b.grafic, target
 		EndIf
 		
 	EndMethod
