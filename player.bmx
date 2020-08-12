@@ -11,7 +11,7 @@ Type player Extends yentity
 	
 	Field max_hp = 99999999999, hp = max_hp
 	
-	Field campiv, tr:yentity
+	Field  tr:yentity
 	
 	Field target, home_range = 100
 
@@ -19,8 +19,7 @@ Type player Extends yentity
 	
 		Super.init()
 		'tr = yentity( get_by_type( "enemy" ).First() )
-		campiv = bbCreatePivot()
-		bbEntityParent grafic, campiv
+
 		
 		shootTimer = ytimer.Create( shootInterval )
 		'create target
@@ -36,8 +35,20 @@ Type player Extends yentity
 		posCam()
 		shoot()
 		hit()
-		'fps_cam()
+		fps_cam()
+		boundaries()
 	End Method'end update
+	
+	Method boundaries()
+		
+		w:game_world = game_world( world )
+		if x > w.range then sx( w.range )
+		if x < -w.range then sx( -w.range )
+		if y < -w.range then sxyz( x, -w.range, z )
+		if y > w.range then sxyz( x, w.range, z )
+		if z < -w.range then sxyz( x, y, -w.range )
+		if z > w.range then sxyz( x, y, w.range )
+	EndMethod
 	
 	Method set_home_target()
 		
@@ -55,14 +66,15 @@ Type player Extends yentity
 	
 	Method fps_cam()
 		
-		y_camera = ye.camera
-		bbTurnEntity campiv, 0, -bbMouseXSpeed()/5.0, 0
+		bbHidePointer()
+		y_camera = grafic'ye.camera
+		bbTurnEntity y_camera, 0, -bbMouseXSpeed()/5.0, 0
 		bbTurnEntity y_camera, bbMouseYSpeed() /5.0, 0, 0 'rotate camera up/down according to mouse Y movement
 		If bbEntityPitch( y_camera ) < -45 'don't allow camera to look below -45 degrees
-		bbRotateEntity y_camera, -45, bbEntityYaw( y_camera ), bbEntityRoll( y_camera )
+		'bbRotateEntity y_camera, -45, bbEntityYaw( y_camera ), bbEntityRoll( y_camera )
 		EndIf
 		If bbEntityPitch( y_camera ) > 45 'don't allow camera to look above 45 degrees
-		bbRotateEntity y_camera, 45, bbEntityYaw( y_camera ), bbEntityRoll( y_camera )
+		'bbRotateEntity y_camera, 45, bbEntityYaw( y_camera ), bbEntityRoll( y_camera )
 		EndIf
 		bbMoveMouse bbGraphicsWidth()/2, bbGraphicsHeight()/2'reset mouse position to middle of screen
 		
@@ -164,7 +176,7 @@ Type player Extends yentity
 	
 	Method shoot()
 		
-		If kd( 57 ) And shootTimer.finished() Then
+		If bbMouseDown( 1 ) And shootTimer.finished() Then
 			
 			If gun_type = "shotgun" Then
 			
@@ -180,7 +192,7 @@ Type player Extends yentity
 					b.target = tr
 					b.movementType = "homing"
 				EndIf
-				return
+				Return
 			EndIf
 			b = make_bullet( x, y+3, z, 1 )
 			bbPointEntity b.grafic, target
@@ -195,6 +207,7 @@ Type player Extends yentity
 			bbPositionEntity b.grafic, yx, yy, yz 'place the bullet at the guns position
 			bbTurnEntity b.grafic, bbEntityPitch( grafic ), bbEntityYaw( grafic ), bbEntityRoll( grafic )'the bullet with the gun
 			b.dmg = bullet_dmg
+			b.alpha( 0.5 )
 			Return b
 	EndMethod
 	
@@ -202,6 +215,7 @@ Type player Extends yentity
 		
 		b:bullet = bullet( collide( "bullet" ) )
 		zo:enemy = enemy( collide( "enemy" ) )
+		c:yentity = yentity( collide( "coin" ) )
 		If b And b.team <> team Then
 			hp = hp - b.dmg
 			world.remove( b )
@@ -212,6 +226,11 @@ Type player Extends yentity
 			zo.move_by( 0, 0, -7 )
 			
 		EndIf
+		if c then
+			gw:game_world = game_world( world )
+			gw.score + = gw.coinIncrement
+			world.remove( c )
+		endif
 		If hp <= 0 Then
 			
 			ye.change_world( "game_over" )
@@ -250,3 +269,16 @@ EndType
 
 
 '////////////////end player////////////////////
+Rem
+random spawn for turret ✔
+arena movement limit ✔
+make the background move with player
+coins ✔
+boss
+make bullets sprites
+bigger bullet hitbox FOR PLAYER ONLY
+
+
+MAYBE LATER:
+level system
+EndRem

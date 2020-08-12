@@ -1,8 +1,8 @@
 Type spawner extends yentity
 	
-	Field spawn_timer:ytimer, spawnInterval = 30
+	Field spawn_timer:ytimer, spawnInterval = 5
 	
-	Field spawn_type = 1
+	Field spawn_type = 1, enemy_types = 4
 	
 	Method init()
 		
@@ -25,9 +25,13 @@ Type spawner extends yentity
 	Method spawn()
 		
 		If spawn_timer.finished() Then
-			
+			Print spawn_type
+			'spawn_type = Rand(1, enemy_types)
+			spawn_type = 2
+			Print spawn_type
 			newEnemy:enemy = enemy.Create(x, y, z, bbCreateSphere(), 0.15)
 			newEnemy.enemy_type = spawn_type
+			newEnemy.parent_spawner = Self
 			world.add(newEnemy)
 			
 		EndIf

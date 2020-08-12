@@ -1,7 +1,7 @@
 Type enemy Extends yentity
 	
-	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, movementType$ = "turret", randDir = 4,removed 
-	Field body_dmg = 3, enemy_type = 1
+	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, randDir = 4,removed 
+	Field body_dmg = 3, enemy_type = 1, canShoot = true, parent_spawner:spawner
 	
 	Method init()
 		
@@ -9,8 +9,12 @@ Type enemy Extends yentity
 		
 		shootTimer = ytimer.Create(shootTimerInterval)
 		moveTimer = ytimer.Create(5)
-		If movementType = "turret" Then
-			move_by(0, 0, speed * 60)
+		If enemy_type = 3 Then
+			'random spawn
+			move_by(Rand(25, 75), Rand(25, 75), Rand(25, 75))
+		EndIf
+		If enemy_type = 4 Then
+			canShoot = false
 		EndIf
 		
 	EndMethod
@@ -25,7 +29,19 @@ Type enemy Extends yentity
 		If removed Then return
 		move()
 		shoot()
+		boundaries()
 		
+	EndMethod
+	
+	Method boundaries()
+		
+		w:game_world = game_world( world )
+		if x > w.range then sx( w.range )
+		if x < -w.range then sx( -w.range )
+		if y < -w.range then sxyz( x, -w.range, z )
+		if y > w.range then sxyz( x, w.range, z )
+		if z < -w.range then sxyz( x, y, -w.range )
+		if z > w.range then sxyz( x, y, w.range )
 	EndMethod
 	
 	Method move()
@@ -35,7 +51,7 @@ Type enemy Extends yentity
 			randDir = Rand(1, 6)
 			
 		EndIf
-		If movementType = "random" Then
+		If enemy_type = 1 Then
 			
 			If randDir = 1 Then move_by(0, speed, 0) 'up
 			If randDir = 2 Then move_by(0, -speed, 0) 'down
@@ -45,7 +61,7 @@ Type enemy Extends yentity
 			If randDir = 6 Then move_by(0, 0, speed) 'backward
 			
 		EndIf
-		If movementType = "homing" Then
+		If enemy_type = 2 Or enemy_type = 4 Then
 			
 			p:player = player( get_by_type("player").First() )
 			bbPointEntity(grafic, p.grafic)
@@ -56,7 +72,7 @@ Type enemy Extends yentity
 	EndMethod
 	
 	Method shoot()
-		
+		If Not canShoot then return
 		If shootTimer.finished() Then
 			
 			p:player = player( get_by_type("player").First() )

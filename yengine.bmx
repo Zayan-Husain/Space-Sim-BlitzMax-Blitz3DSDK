@@ -376,10 +376,28 @@ Type yentity
 		bbPositionEntity grafic, bbEntityX( grafic ), v, bbEntityZ( grafic )
 		
 	EndMethod 'sy
-	
-	Method printxyz()
 		
-		 Print x+"xe"
+	Method sx( v:Float )
+	
+		bbPositionEntity grafic, v, bbEntityY( grafic ), bbEntityZ( grafic )
+		
+	EndMethod 'sy
+	
+	Method printxyz( px = false, py = false, pz = false )
+		
+		if px Then
+			Print x
+			return
+		Endif
+		if py Then
+			Print y
+			return
+		Endif
+		if pz Then
+			Print z
+			return
+		Endif
+		Print x+"xe"
 		Print y+"ye"
 		Print z+"ze"
 	EndMethod
