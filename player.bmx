@@ -228,7 +228,7 @@ Type player Extends yentity
 		EndIf
 		if c then
 			gw:game_world = game_world( world )
-			gw.score + = gw.coinIncrement
+			gw.score = gw.score + gw.coinIncrement
 			world.remove( c )
 		endif
 		If hp <= 0 Then

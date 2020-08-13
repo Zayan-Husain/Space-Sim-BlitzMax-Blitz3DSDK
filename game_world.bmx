@@ -53,6 +53,12 @@ Field range = 250, coin_timer:ytimer, coinInterval = 10, score = 0, coinIncremen
 		'spawner
 		sp:spawner = spawner.Create( 5, -4, 7, bbCreateCylinder(), 0 )
 		add( sp )
+		
+		boss2:boss = boss.Create( 3, 3, 3, bbCreateCylinder(), 0.075 )
+		bbScaleEntity boss2.grafic, 5, 5, 5
+		boss2.collide_c = 5
+		add( boss2 )
+		
 
 	
 	EndMethod' init

@@ -12,6 +12,7 @@ Include "player.bmx"
 Include "enemy.bmx"
 Include "bullet.bmx"
 Include "spawner.bmx"
+Include "boss.bmx"
 
 
 
