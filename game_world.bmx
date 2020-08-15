@@ -7,7 +7,7 @@
 Type game_world Extends yworld
 	
 Field  p:player 
-Field range = 250, coin_timer:ytimer, coinInterval = 10, score = 0, coinIncrement = 10
+Field range = 250, coin_timer:ytimer, coinInterval = 10, score = 0, coinIncrement = 10, skb:yentity
 		
 	Method update()
 		
@@ -18,7 +18,9 @@ Field range = 250, coin_timer:ytimer, coinInterval = 10, score = 0, coinIncremen
 	EndMethod
 	
 	Method twodupdate()
-
+		
+		bbText 250, 20, "Hp: " + p.hp, True
+		
 	EndMethod
 		
 	Method init()
@@ -27,7 +29,7 @@ Field range = 250, coin_timer:ytimer, coinInterval = 10, score = 0, coinIncremen
 	
 		'init skybox
 		skybox = bbCreateSphere( 12 )
-		clouds = bbLoadTexture( "gfx/realsky.bmp" )
+		clouds = bbLoadTexture( "gfx/realsky2.bmp" )
 		bbScaleEntity skybox, 500, 500, 500
 		bbEntityTexture skybox, clouds
 		'bbScaleTexture clouds, 0.25, 0.25
@@ -51,10 +53,12 @@ Field range = 250, coin_timer:ytimer, coinInterval = 10, score = 0, coinIncremen
 		coin_timer = ytimer.Create( coinInterval )
 		
 		'spawner
-		sp:spawner = spawner.Create( 5, -4, 7, bbCreateCylinder(), 0 )
-		add( sp )
+		For i = 0 Until 4
+			sp:spawner = spawner.Create( Rand( 0, 100 ), Rand( 0, 100 ), Rand( 0, 100 ), bbCreateCylinder(), 0 )
+			add( sp )
+		Next
 		
-		boss2:boss = boss.Create( 3, 3, 3, bbCreateCylinder(), 0.075 )
+		boss2:boss = boss.Create( 100, 100, 100, bbCreateCylinder(), 0.075 )
 		bbScaleEntity boss2.grafic, 5, 5, 5
 		boss2.collide_c = 5
 		add( boss2 )

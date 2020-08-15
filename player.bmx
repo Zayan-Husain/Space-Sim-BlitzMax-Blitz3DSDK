@@ -66,6 +66,7 @@ Type player Extends yentity
 	
 	Method fps_cam()
 		
+		gw:game_world = game_world( world )
 		bbHidePointer()
 		y_camera = grafic'ye.camera
 		bbTurnEntity y_camera, 0, -bbMouseXSpeed()/5.0, 0
@@ -202,8 +203,9 @@ Type player Extends yentity
 	
 	Method make_bullet:bullet( yx, yy, yz, yspeed )
 	
-			b:bullet = bullet.Create( 0, 0, 0, bbCreateCone(), yspeed )
+			b:bullet = bullet.Create( 0, 0, 0, bbCopyEntity( target ), yspeed )
 			world.add( b )
+			b.collide_c = 3
 			bbPositionEntity b.grafic, yx, yy, yz 'place the bullet at the guns position
 			bbTurnEntity b.grafic, bbEntityPitch( grafic ), bbEntityYaw( grafic ), bbEntityRoll( grafic )'the bullet with the gun
 			b.dmg = bullet_dmg
@@ -272,11 +274,11 @@ EndType
 Rem
 random spawn for turret ✔
 arena movement limit ✔
-make the background move with player
+make the background move with player ✔
 coins ✔
-boss
-make bullets sprites
-bigger bullet hitbox FOR PLAYER ONLY
+boss ✔
+make bullets sprites ✔
+bigger bullet hitbox FOR PLAYER ONLY ✔
 
 
 MAYBE LATER:

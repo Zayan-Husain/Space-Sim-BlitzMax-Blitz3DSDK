@@ -1,6 +1,6 @@
 Type enemy Extends yentity
 	
-	Field max_hp = 10, hp = max_hp, team = 2, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, randDir = 4,removed 
+	Field max_hp = 10, hp = max_hp, team, shootTimer:ytimer, shootTimerInterval = 2, moveTimer:ytimer, randDir = 4,removed 
 	Field body_dmg = 3, enemy_type = 1, canShoot = true, parent_spawner:spawner
 	
 	Method init()
